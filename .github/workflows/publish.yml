@@ -1,0 +1,101 @@
+name: Publish to PyPI
+
+# Publishes through PyPI Trusted Publishing (OIDC): no PyPI token is stored in this repo.
+# A manual run (workflow_dispatch) publishes nothing; it only checks that the OIDC exchange with PyPI works.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The SDK runs on Python 3.9 or later; the release is built and tested on one current version.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Read the package name and version
+        id: package
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import pathlib, re, tomllib
+          print("name=" + tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["name"])
+          print("version=" + re.search(r'__version__ = "([^"]+)"', pathlib.Path("src/funnelchat/_version.py").read_text()).group(1))
+          PY
+
+      # The token PyPI mints here is discarded: it is never printed or stored, and expires in 15 minutes.
+      - name: Check the OIDC exchange with PyPI
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          NAME: ${{ steps.package.outputs.name }}
+        run: |
+          audience="$(curl -sS https://pypi.org/_/oidc/audience | jq -r '.audience // empty')"
+          response="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${audience:-pypi}")"
+          id_token="$(jq -r '.value // empty' <<< "$response")"
+          unset response
+          if [ -z "$id_token" ]; then
+            echo "::error::Could not get a GitHub OIDC token"
+            exit 1
+          fi
+          echo "::add-mask::$id_token"
+          status="$(jq -n --arg token "$id_token" '{token: $token}' | curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' --data @- https://pypi.org/_/oidc/mint-token)"
+          unset id_token
+          if [ "${status:0:1}" != "2" ]; then
+            echo "::error::Trusted publishing failed for $NAME: HTTP $status"
+            exit 1
+          fi
+          echo "Trusted publishing OK for $NAME"
+
+      - name: Check that the tag matches the package version
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "::error::Tag $TAG does not match src/funnelchat/_version.py version $VERSION (expected v$VERSION)"
+            exit 1
+          fi
+
+      - name: Check whether this version is already on PyPI
+        id: published
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          NAME: ${{ steps.package.outputs.name }}
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/$NAME/$VERSION/json")" = "200" ]; then
+            echo "::notice::$NAME $VERSION is already on PyPI; nothing to publish"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check the generated code, test and build
+        if: github.event_name != 'workflow_dispatch' && steps.published.outputs.exists != 'true'
+        run: |
+          python -m pip install --upgrade pip build
+          python -m pip install -e . pytest
+          python scripts/generate.py --check
+          python -m pytest
+          python -m build
+
+      # Uploads dist/ with digital attestations (provenance), through the OIDC exchange.
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event_name != 'workflow_dispatch' && steps.published.outputs.exists != 'true'
