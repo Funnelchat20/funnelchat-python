@@ -1,0 +1,204 @@
+{
+  "x-fc-resources": {
+    "title": "SDK resources",
+    "description": "Which operation of the spec each method of each resource is. The same resources, methods and operations as funnelchat-node 0.3.2 (src/resources/*.ts, feat/seguir-un-grupo @ f913feb), with Python names (`sendDirect` -> `send_direct`). `python scripts/generate.py` builds src/funnelchat/resources.py from this and from the spec: the path parameters, query, body and response of each method come from the operation. If an operation of this list is no longer in the spec, the generation fails and says which one.",
+    "fields": {
+      "attribute": "The client attribute: `client.connect_links`.",
+      "class": "The class in funnelchat.resources.",
+      "doc": "The class docstring.",
+      "mixins": "Hand-written classes the resource also inherits from (`module:Class`).",
+      "methods[].name": "The method name, in snake_case.",
+      "methods[].op": "`METHOD /path`, exactly as in the spec.",
+      "methods[].paginate": "Returns a Page (iterate it for every item of every page) instead of the response body.",
+      "methods[].doc": "The method docstring. It starts with the operation in backticks.",
+      "methods[].query": "`false` leaves out the query keyword arguments of the operation (`extra_query` still works).",
+      "methods[].bodyDefaults": "Body fields that, when not given, take the value of a path parameter (so they are optional).",
+      "methods[].pathNames": "The Python name of a path parameter, when its snake_case name says less (`group` -> `group_uid`). Path parameters are positional-only, so the name never changes a call.",
+      "methods[].idempotent": "The operation takes `idempotency_key`, sent as the `Idempotency-Key` header."
+    }
+  },
+  "resources": [
+    {
+      "attribute": "contacts",
+      "class": "Contacts",
+      "doc": "Contacts (conversations area): search, create, update, custom fields, notes and the 24-hour window.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/contacts", "paginate": true, "doc": "`GET /api/v1/contacts`, paginated. Filter by `phone` without the `+`." },
+        { "name": "create", "op": "POST /api/v1/contacts", "doc": "`POST /api/v1/contacts`." },
+        { "name": "upsert", "op": "POST /api/v1/contacts/update-or-create", "doc": "`POST /api/v1/contacts/update-or-create`: creates the contact or updates the one with that phone." },
+        { "name": "retrieve", "op": "GET /api/v1/contacts/{contact}", "doc": "`GET /api/v1/contacts/{contact}`." },
+        { "name": "update", "op": "PUT /api/v1/contacts/{contact}", "doc": "`PUT /api/v1/contacts/{contact}`." },
+        { "name": "delete", "op": "POST /api/v1/contacts/delete", "doc": "`POST /api/v1/contacts/delete`: deletes the contacts of the body (`contactIds`, or a filter)." },
+        { "name": "list_tags", "op": "GET /api/v1/contacts/{contact}/tags", "paginate": true, "doc": "`GET /api/v1/contacts/{contact}/tags`, paginated." },
+        { "name": "list_custom_fields", "op": "GET /api/v1/contacts/{contact}/custom-fields", "paginate": true, "doc": "`GET /api/v1/contacts/{contact}/custom-fields`, paginated." },
+        { "name": "attach_custom_field", "op": "POST /api/v1/contacts/attach-custom-field", "doc": "`POST /api/v1/contacts/attach-custom-field`: sets a custom field on contacts." },
+        { "name": "detach_custom_field", "op": "POST /api/v1/contacts/detach-custom-field", "doc": "`POST /api/v1/contacts/detach-custom-field`." },
+        { "name": "meta_window", "op": "GET /api/v1/contacts/{contact}/meta-window", "doc": "`GET /api/v1/contacts/{contact}/meta-window`: whether the 24-hour window with the contact is open on a WhatsApp Cloud number (`is_open`). Outside it, only templates can be sent." },
+        { "name": "list_by_device", "op": "GET /api/v1/devices/{device}/contacts", "paginate": true, "doc": "`GET /api/v1/devices/{device}/contacts`, paginated: the contacts of one number." },
+        { "name": "list_notes", "op": "GET /api/v1/contacts/{contact}/notes", "paginate": true, "doc": "`GET /api/v1/contacts/{contact}/notes`, paginated." },
+        { "name": "create_note", "op": "POST /api/v1/contacts/{contact}/notes", "doc": "`POST /api/v1/contacts/{contact}/notes`." },
+        { "name": "delete_note", "op": "DELETE /api/v1/contacts/{contact}/notes/{note}", "doc": "`DELETE /api/v1/contacts/{contact}/notes/{note}`." }
+      ]
+    },
+    {
+      "attribute": "conversations",
+      "class": "Conversations",
+      "doc": "Conversations (conversations area): the inbox, its counters and the state of each conversation.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/conversations", "paginate": true, "doc": "`GET /api/v1/conversations`, paginated by cursor." },
+        { "name": "update", "op": "PUT /api/v1/contacts/{contact}/update", "doc": "`PUT /api/v1/contacts/{contact}/update`: changes the conversation with a contact (open, assigned…)." },
+        { "name": "count_unread", "op": "GET /api/v1/conversations/count/unread", "doc": "`GET /api/v1/conversations/count/unread`." },
+        { "name": "count_open", "op": "GET /api/v1/conversations/count/open", "doc": "`GET /api/v1/conversations/count/open`." },
+        { "name": "count_closed", "op": "GET /api/v1/conversations/count/closed", "doc": "`GET /api/v1/conversations/count/closed`." },
+        { "name": "count_all", "op": "GET /api/v1/conversations/count/all", "doc": "`GET /api/v1/conversations/count/all`." },
+        { "name": "mark_all_read", "op": "POST /api/v1/conversations/mark-all-read", "doc": "`POST /api/v1/conversations/mark-all-read`." },
+        { "name": "mark_all_unread", "op": "POST /api/v1/conversations/mark-all-unread", "doc": "`POST /api/v1/conversations/mark-all-unread`." }
+      ]
+    },
+    {
+      "attribute": "messages",
+      "class": "Messages",
+      "doc": "Messages to one contact (conversations area): send text, files, buttons and forms, read the history or one message by id, forward, react.\n\nEvery send answers right away with the registered message, `status` `queued`: accepted is not delivered. The rest arrives by `message.status_changed` (its `message_id` is the `id` of the message) or with `get()`. Sending with an API key needs **Contacts and conversations → Send** and follows the WhatsApp rules: `422 window_closed`, `422 antiblock_*`, `422 recipient_*`, `422 provider_unsupported`, `429 rate_limited` (with `retry_after`) and `429 mac_lockout_24h`. A rejected send stores nothing (see `SEND_ERROR_CODES`). A send is never retried automatically unless you pass `retry_send=True`.",
+      "methods": [
+        { "name": "send", "op": "POST /api/v1/contacts/{contact}/message", "bodyDefaults": { "contact_id": "contact" }, "doc": "`POST /api/v1/contacts/{contact}/message`: text, a file (`file`, a URL) or buttons and lists (`options`) to a contact. Returns `{\"message\": ...}`: the registered message, with its `id` and `status` `queued`.\n\nSend `phone` (or `whatsapp_id`) of the same contact: the API checks it (`422 recipient_mismatch`). `contact_id` defaults to the contact of the route. A file from a URL without a known extension (a signed URL) needs `file_type` (`image`, `video`, `audio`, `document`, `sticker`), and a document `file_name`; an unsupported extension without `file_type` is a `415`. `client_reference` (1 to 64 visible ASCII characters) comes back in the history and in `message.status_changed`." },
+        { "name": "send_direct", "op": "POST /api/v1/message/send-message", "doc": "`POST /api/v1/message/send-message`: a send straight to a phone, in one call: `device_id`, `phone` (with country code, digits only) and the text or file. If the phone is not a contact yet, it is created in the workspace of your key (as `contacts.upsert()` would), and it stays created even if a WhatsApp rule then stops the send. Returns `{\"message\": ...}`, with the contact in `message[\"contact_id\"]`.\n\nInstead of `phone`: `contact_id`, or `whatsapp_id` (Meta's id of the person, official numbers only). With `phone` and `contact_id`, they must be the same contact (`422 recipient_mismatch`); a phone of a contact of another workspace answers `404`. It is a send: same rules as `send()`." },
+        { "name": "send_form", "op": "POST /api/v1/contacts/{contact}/message/form", "doc": "`POST /api/v1/contacts/{contact}/message/form`: sends a published WhatsApp form (`form_id` is the form's `family_id`). Returns `{\"message\": ...}` with `type` `whatsapp_form`; the answers arrive by `whatsapp_form.completed`. It is a send: same rules as `send()`." },
+        { "name": "get", "op": "GET /api/v1/contacts/{contact}/messages/{message}", "doc": "`GET /api/v1/contacts/{contact}/messages/{message}`: one message by the id a send or a webhook gave you (`message_id` of `message.status_changed`). `status` moves from `queued` to `sent`, `delivered`, `read` or `failed` (then `error` says why)." },
+        { "name": "list", "op": "GET /api/v1/contacts/{contactId}/messages", "paginate": true, "doc": "`GET /api/v1/contacts/{contactId}/messages`, paginated by cursor: the history of a contact." },
+        { "name": "send_contact_card", "op": "POST /api/v1/contacts/{contact}/message/contact-card", "doc": "`POST /api/v1/contacts/{contact}/message/contact-card`: sends up to 5 contact cards. Returns `{\"messages\": [...]}`, one message per card, in the order of `contact_card_ids`." },
+        { "name": "forward", "op": "POST /api/v1/contacts/{contact}/messages/{message}/forward", "doc": "`POST /api/v1/contacts/{contact}/messages/{message}/forward`: forwards a message to up to 5 contacts. Returns one item per destination, in order: `status` (`queued`, or `blocked` with `reason`) and its `message`, or `None` when nothing was registered for that destination." },
+        { "name": "react", "op": "PUT /api/v1/contacts/{contact}/messages/{message}/reaction", "doc": "`PUT /api/v1/contacts/{contact}/messages/{message}/reaction`: reacts with an emoji." },
+        { "name": "remove_reaction", "op": "DELETE /api/v1/contacts/{contact}/messages/{message}/reaction", "doc": "`DELETE /api/v1/contacts/{contact}/messages/{message}/reaction`: removes your reaction." }
+      ]
+    },
+    {
+      "attribute": "templates",
+      "class": "Templates",
+      "doc": "WhatsApp message templates (conversations area): list, create, edit, send.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/templates", "paginate": true, "doc": "`GET /api/v1/templates`, paginated. Send only the templates with `available` true: Meta pauses or disables the others." },
+        { "name": "create", "op": "POST /api/v1/templates", "doc": "`POST /api/v1/templates`: creates a template and submits it to Meta." },
+        { "name": "retrieve", "op": "GET /api/v1/templates/{template}", "doc": "`GET /api/v1/templates/{template}`." },
+        { "name": "update", "op": "PUT /api/v1/templates/{template}", "doc": "`PUT /api/v1/templates/{template}`." },
+        { "name": "quick_reply_buttons", "op": "GET /api/v1/templates/{template}/quick-reply-buttons", "doc": "`GET /api/v1/templates/{template}/quick-reply-buttons`." },
+        { "name": "send", "op": "POST /api/v1/devices/{device}/templates/{template}/send-template", "doc": "`POST /api/v1/devices/{device}/templates/{template}/send-template`: sends an approved template, the way to write to a contact outside the 24-hour window. Send `phone` alone (the contact is created when it does not exist, as with `messages.send_direct()`), or `contact_id`, or both when they are the same contact; `template_variables` `{\"body\": [...]}` fills the body variables in order. Returns `{\"message\": ...}`, the registered message with `status` `queued`. A variable that points to a field that does not exist is `422 template_unresolved_placeholder`; a template this account cannot send, `404 template_not_found`. It is a send: never retried automatically." },
+        { "name": "delete", "op": "DELETE /api/v1/devices/{device}/templates/{template}", "doc": "`DELETE /api/v1/devices/{device}/templates/{template}`." }
+      ]
+    },
+    {
+      "attribute": "forms",
+      "class": "Forms",
+      "doc": "WhatsApp forms (conversations area): build them, version and publish them, choose their numbers and read the answers. To send one to a contact, `messages.send_form()`.\n\nA form has versions: the `{id}` routes take a version id, the `families/{familyId}` routes the form's id (`family_id`). Reading needs **Contacts and conversations → View** and changing **Contacts and conversations → Edit**. The answers also arrive by `whatsapp_form.completed`.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/forms", "paginate": true, "doc": "`GET /api/v1/forms`, paginated: one row per form, with its current version." },
+        { "name": "templates", "op": "GET /api/v1/forms/templates", "doc": "`GET /api/v1/forms/templates`: the templates to start a form from (`blank` is an empty one)." },
+        { "name": "create", "op": "POST /api/v1/forms", "doc": "`POST /api/v1/forms`: creates a draft from a template (`template_key`) for a number." },
+        { "name": "retrieve", "op": "GET /api/v1/forms/{id}", "doc": "`GET /api/v1/forms/{id}`: one version (`id` is the version id), with its lint issues, versions and numbers." },
+        { "name": "update", "op": "PUT /api/v1/forms/{id}", "doc": "`PUT /api/v1/forms/{id}`: saves a draft. A published version answers `409 PUBLISHED`; with `expected_updated_at`, someone else's change answers `409 STALE`." },
+        { "name": "delete", "op": "DELETE /api/v1/forms/{id}", "doc": "`DELETE /api/v1/forms/{id}`: deletes a draft (a published form is deprecated, not deleted)." },
+        { "name": "create_version", "op": "POST /api/v1/forms/{id}/versions", "doc": "`POST /api/v1/forms/{id}/versions`: a new draft from this version, or the draft that already existed (`created` false)." },
+        { "name": "sync", "op": "POST /api/v1/forms/{id}/sync", "doc": "`POST /api/v1/forms/{id}/sync`: validates the version in Meta (`502 META` when Meta rejects it)." },
+        { "name": "publish", "op": "POST /api/v1/forms/{id}/publish", "doc": "`POST /api/v1/forms/{id}/publish`: publishes the version (`422 LINT` with errors)." },
+        { "name": "numbers", "op": "GET /api/v1/forms/{id}/numbers", "doc": "`GET /api/v1/forms/{id}/numbers`: the numbers of the form and their state." },
+        { "name": "add_number", "op": "POST /api/v1/forms/{id}/numbers", "doc": "`POST /api/v1/forms/{id}/numbers`: adds a number." },
+        { "name": "remove_number", "op": "DELETE /api/v1/forms/{id}/numbers/{deviceId}", "doc": "`DELETE /api/v1/forms/{id}/numbers/{deviceId}`: removes a number (not the primary one)." },
+        { "name": "retry_numbers", "op": "POST /api/v1/forms/{id}/numbers/retry", "doc": "`POST /api/v1/forms/{id}/numbers/retry`: retries the numbers that failed." },
+        { "name": "definition", "op": "GET /api/v1/forms/families/{familyId}/definition", "doc": "`GET /api/v1/forms/families/{familyId}/definition`: the published definition of a form, or `data` `None`." },
+        { "name": "versions", "op": "GET /api/v1/forms/families/{familyId}/versions", "doc": "`GET /api/v1/forms/families/{familyId}/versions`: the versions of a form." },
+        { "name": "list_responses", "op": "GET /api/v1/forms/families/{familyId}/responses", "paginate": true, "doc": "`GET /api/v1/forms/families/{familyId}/responses`, paginated: the answers to a form, with `columns`." },
+        { "name": "retrieve_response", "op": "GET /api/v1/forms/families/{familyId}/responses/{runId}", "doc": "`GET /api/v1/forms/families/{familyId}/responses/{runId}`: one answer in detail." },
+        { "name": "metrics", "op": "GET /api/v1/forms/families/{familyId}/metrics", "doc": "`GET /api/v1/forms/families/{familyId}/metrics`: the funnel: sent, delivered, read, completed and the rates." }
+      ]
+    },
+    {
+      "attribute": "tags",
+      "class": "Tags",
+      "doc": "Tags (conversations area).",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/tags", "paginate": true, "doc": "`GET /api/v1/tags`, paginated." },
+        { "name": "create", "op": "POST /api/v1/tags", "doc": "`POST /api/v1/tags`." },
+        { "name": "retrieve", "op": "GET /api/v1/tags/{tag}", "query": false, "doc": "`GET /api/v1/tags/{tag}`." },
+        { "name": "update", "op": "PUT /api/v1/tags/{tag}", "doc": "`PUT /api/v1/tags/{tag}`." },
+        { "name": "delete", "op": "POST /api/v1/tags/delete", "doc": "`POST /api/v1/tags/delete`: deletes the tags in `tagIds`." },
+        { "name": "list_contacts", "op": "GET /api/v1/tags/{tag}/contacts", "paginate": true, "doc": "`GET /api/v1/tags/{tag}/contacts`, paginated: the contacts with a tag." }
+      ]
+    },
+    {
+      "attribute": "custom_fields",
+      "class": "CustomFields",
+      "doc": "Custom fields of contacts (conversations area). To set a value on a contact, `contacts.attach_custom_field()`.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/custom-fields", "paginate": true, "doc": "`GET /api/v1/custom-fields`, paginated." },
+        { "name": "create", "op": "POST /api/v1/custom-fields", "doc": "`POST /api/v1/custom-fields`." },
+        { "name": "retrieve", "op": "GET /api/v1/custom-fields/{customField}", "doc": "`GET /api/v1/custom-fields/{customField}`." },
+        { "name": "update", "op": "PUT /api/v1/custom-fields/{customField}", "doc": "`PUT /api/v1/custom-fields/{customField}`." },
+        { "name": "delete", "op": "POST /api/v1/custom-fields/delete", "doc": "`POST /api/v1/custom-fields/delete`." }
+      ]
+    },
+    {
+      "attribute": "groups",
+      "class": "Groups",
+      "doc": "WhatsApp groups (communities area): the groups of a number, live from WhatsApp (`list_by_device()`); following one (`follow()`), so its joins and leaves arrive as events; sending a message to a group (`send_message()`) and reading how it went (`retrieve_action()`); and the groups already in the account, with their participants, joins and leaves, messages, scheduled messages and actions.\n\nReading needs **Groups and campaigns → View**, sending **Groups and campaigns → Send** and following **Groups and campaigns → Manage groups**. Who joins and who leaves a followed group arrives by `group_participant.joined` and `group_participant.left`.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/groups", "paginate": true, "doc": "`GET /api/v1/groups`, paginated: the groups already in the account. Each group's `uid` (`…@g.us`) is what `send_message()` takes." },
+        { "name": "retrieve", "op": "GET /api/v1/groups/{group}", "doc": "`GET /api/v1/groups/{group}`." },
+        { "name": "list_by_device", "op": "GET /api/v1/devices/{device}/groups", "paginate": true, "doc": "`GET /api/v1/devices/{device}/groups`, paginated (`page`, `pageSize`): the groups of one number, read live from WhatsApp (for a key, reused for a minute per number), also those not in the account yet. A group already in the account brings `device_id`; any other can be followed with `follow()`. Its `uid` is the group of `follow()` and `send_message()`." },
+        { "name": "metadata", "op": "GET /api/v1/groups/{groupUid}/metadata", "pathNames": { "groupUid": "uid" }, "doc": "`GET /api/v1/groups/{groupUid}/metadata`: live metadata of a group by its WhatsApp uid, read through one number." },
+        { "name": "list_participants", "op": "GET /api/v1/groups/participants", "paginate": true, "doc": "`GET /api/v1/groups/participants`, paginated: the participants of one group (`groupUid`)." },
+        { "name": "list_participant_events", "op": "GET /api/v1/groups/{group}/participant-events", "paginate": true, "doc": "`GET /api/v1/groups/{group}/participant-events`, paginated: joins and leaves." },
+        { "name": "list_messages", "op": "GET /api/v1/groups/{group}/messages", "paginate": true, "doc": "`GET /api/v1/groups/{group}/messages`, paginated." },
+        { "name": "list_scheduled_messages", "op": "GET /api/v1/groups/{group}/scheduled-messages", "paginate": true, "doc": "`GET /api/v1/groups/{group}/scheduled-messages`, paginated." },
+        { "name": "list_actions", "op": "GET /api/v1/groups/{group}/actions", "paginate": true, "doc": "`GET /api/v1/groups/{group}/actions`, paginated." },
+        { "name": "send_message", "op": "POST /api/v1/groups/{group}/messages", "pathNames": { "group": "group_uid" }, "doc": "`POST /api/v1/groups/{group}/messages`: sends a text (`type=\"text\"`, `text`) or one file (`image`, `video`, `audio` or `document`, by its `https` `media_url`) to the group with that `uid` (`…@g.us`), from `device_id`. It answers `202` with `{\"action_id\": ..., \"status\": \"queued\"}` and goes out in the background: the result arrives by `group_action.completed` (or `group_action.failed`), with the same `action_id` in `action.uuid`, or with `retrieve_action()`. A QR number must be admin of the group; an official number, the one the group belongs to. A group not in the account yet is followed first (`follow()`, with its rules). Rejections: `GROUP_ACTION_ERROR_CODES`. It is a send: never retried automatically." },
+        { "name": "follow", "op": "POST /api/v1/groups/{group}/import", "pathNames": { "group": "group_uid" }, "doc": "`POST /api/v1/groups/{group}/import`: follows the WhatsApp group with that `uid` (`…@g.us`) of a QR number (`device_id`), as importing it in the panel does: from then on its joins and leaves arrive by `group_participant.joined` and `group_participant.left`. Returns `{\"data\": {\"uid\", \"name\", \"imported\", \"is_admin\"}}`: `imported` is false when the group was already in the account, and `is_admin` says whether the number administers it (without that it cannot write to it). Needs **Groups and campaigns → Manage groups** (`403 import_permission_required`); up to 5 groups per number per minute (`429 import_rate_limited`, with `retry_after`); an official number is `422 provider_unsupported`." },
+        { "name": "retrieve_action", "op": "GET /api/v1/groups/actions/{action}", "doc": "`GET /api/v1/groups/actions/{action}`: where a group action, such as a message sent with `send_message()`, is (`queued`, `running`, `completed` or `failed`) and its `result` (`result.message.uid` is the id of the message in WhatsApp)." }
+      ]
+    },
+    {
+      "attribute": "devices",
+      "class": "Devices",
+      "doc": "WhatsApp numbers of the account (accounts area). The `id` of a number is the `device_id` you send with.",
+      "methods": [
+        { "name": "list", "op": "GET /api/v1/devices", "paginate": true, "doc": "`GET /api/v1/devices`. `external_reference` keeps only the numbers with that reference (exact match)." },
+        { "name": "create", "op": "POST /api/v1/devices", "idempotent": true, "doc": "`POST /api/v1/devices`: creates a number that connects by QR code (`connection=\"qr\"`), not connected yet. Then show its QR with `qr()`, or send your customer a connect link (`connect_links.create()`). It takes a slot of the plan, with the panel's rejections (`403 numbers_not_included`, `403 number_limit_reached`…). An account has at most one QR number waiting to be scanned: another one is `409 pending_number_exists`, with that number's `device_id` in `error.body`. `country` (two letters) is the country of the phone that will scan the QR." },
+        { "name": "retrieve", "op": "GET /api/v1/devices/{device}", "doc": "`GET /api/v1/devices/{device}`. `capabilities` says what the number can do by API." },
+        { "name": "delete", "op": "DELETE /api/v1/devices/{device}", "doc": "`DELETE /api/v1/devices/{device}`: deletes the number and frees its slot of the plan. Irreversible. Sends `device.deleted`." },
+        { "name": "update", "op": "PUT /api/v1/devices/{device}", "doc": "`PUT /api/v1/devices/{device}`: also changes `external_reference`." },
+        { "name": "qr", "op": "GET /api/v1/devices/{device}/qr", "doc": "`GET /api/v1/devices/{device}/qr`: the QR code to scan, as a PNG data URI (`qr_code`), or `None` once `connected`. Ask for it again every `expires_in` seconds and have it scanned right away: WhatsApp changes the code every few seconds, so show the latest and never store or forward a QR. Only for QR numbers (an official one is `422 provider_unsupported`)." },
+        { "name": "status", "op": "GET /api/v1/devices/{device}/status", "doc": "`GET /api/v1/devices/{device}/status`: connection status." },
+        { "name": "health", "op": "GET /api/v1/devices/{device}/health", "doc": "`GET /api/v1/devices/{device}/health`." },
+        { "name": "me", "op": "GET /api/v1/devices/{device}/me", "doc": "`GET /api/v1/devices/{device}/me`: the WhatsApp profile of the number." },
+        { "name": "check_phone", "op": "GET /api/v1/devices/{device}/check-phone", "doc": "`GET /api/v1/devices/{device}/check-phone`: whether a phone has WhatsApp." },
+        { "name": "list_connection_history", "op": "GET /api/v1/devices/{device}/connection-history", "paginate": true, "doc": "`GET /api/v1/devices/{device}/connection-history`, paginated." }
+      ]
+    },
+    {
+      "attribute": "connect_links",
+      "class": "ConnectLinks",
+      "doc": "Connect links (accounts area): a single-use page, on the Funnelchat domain, where you or your customer connect a WhatsApp number to your account, by QR code (`type=\"qr\"`) or as an official number through Meta's sign-up (`type=\"meta\"`, answered `503 meta_connect_disabled` in production for now). The number is created when the page finishes; with `device_id` the link reconnects that number instead.\n\nReading needs **WhatsApp numbers → View**; creating and revoking, **WhatsApp numbers → Create, connect and delete**. The result arrives three ways: the `device.connected` webhook (with `connect_link_id` and `external_reference`), the `return_url`, or `get()`.",
+      "methods": [
+        { "name": "create", "op": "POST /api/v1/connect-links", "idempotent": true, "doc": "`POST /api/v1/connect-links`: returns `{\"data\": link}`. `link[\"url\"]` is the page to open: it carries the token and comes only in this response. `country` (only `qr`, two letters) is the country of the phone that will scan the QR. At most 20 links open (`429 too_many_open_links`)." },
+        { "name": "get", "op": "GET /api/v1/connect-links/{link}", "doc": "`GET /api/v1/connect-links/{link}`: its `status` (`pending`, `completed`, `failed`, `expired`, `revoked`), and `device_id` and `error_code` once it ends." },
+        { "name": "list", "op": "GET /api/v1/connect-links", "paginate": true, "doc": "`GET /api/v1/connect-links`, paginated, newest first: filter by `status` or `external_reference`." },
+        { "name": "revoke", "op": "DELETE /api/v1/connect-links/{link}", "doc": "`DELETE /api/v1/connect-links/{link}`: revokes a `pending` link (any other is `409 link_not_pending`)." }
+      ]
+    },
+    {
+      "attribute": "webhooks",
+      "class": "Webhooks",
+      "doc": "Webhook subscriptions (accounts area), plus `verify()` and `construct_event()` for the deliveries (the same functions as `funnelchat.webhooks`).\n\nReading needs **Notifications (webhooks) → View** and the rest **Notifications (webhooks) → Manage**. A key only sees and manages subscriptions to events of the areas it can read (**Contacts and conversations → View**, **Groups and campaigns → View**, **WhatsApp numbers → View**): asking for others is a `422` on `events`.",
+      "mixins": ["funnelchat.webhooks:WebhookHelpers"],
+      "methods": [
+        { "name": "events", "op": "GET /api/v1/webhooks/events", "doc": "`GET /api/v1/webhooks/events`: the event types you can subscribe to, each with `status`." },
+        { "name": "list", "op": "GET /api/v1/webhooks", "doc": "`GET /api/v1/webhooks`: every subscription of the workspace of the key (at most 50), not only yours." },
+        { "name": "create", "op": "POST /api/v1/webhooks", "doc": "`POST /api/v1/webhooks`: the response brings `secret` once. Store it, and store the `id`." },
+        { "name": "retrieve", "op": "GET /api/v1/webhooks/{id}", "doc": "`GET /api/v1/webhooks/{id}` (without the secret)." },
+        { "name": "update", "op": "PUT /api/v1/webhooks/{id}", "doc": "`PUT /api/v1/webhooks/{id}`: replaces `url`, `events`, `description` and `filters`. The secret stays." },
+        { "name": "delete", "op": "DELETE /api/v1/webhooks/{id}", "doc": "`DELETE /api/v1/webhooks/{id}`." },
+        { "name": "rotate_secret", "op": "POST /api/v1/webhooks/{id}/rotate-secret", "doc": "`POST /api/v1/webhooks/{id}/rotate-secret`: the new secret comes once; the old one stops working. Not open to API keys (`403 route_not_available`): rotate it from the panel." },
+        { "name": "test", "op": "POST /api/v1/webhooks/{id}/test", "doc": "`POST /api/v1/webhooks/{id}/test`: delivers one signed `webhook.test` now. Check `succeeded`." },
+        { "name": "list_deliveries", "op": "GET /api/v1/webhooks/{id}/deliveries", "paginate": true, "doc": "`GET /api/v1/webhooks/{id}/deliveries`, paginated: one row per attempt, newest first." }
+      ]
+    }
+  ]
+}
