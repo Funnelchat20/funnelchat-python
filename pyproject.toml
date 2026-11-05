@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "funnelchat"
+dynamic = ["version"]
+description = "Official Python SDK for the Funnelchat public API: WhatsApp numbers, messages, templates, groups and webhooks"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "Funnelchat", email = "soporte@funnelchat.com" }]
+keywords = ["funnelchat", "whatsapp", "whatsapp-api", "api", "sdk", "webhooks"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = ["httpx>=0.23,<1"]
+
+[project.urls]
+Homepage = "https://developers-portal.funnelchat.app/docs/"
+Documentation = "https://developers-portal.funnelchat.app/docs/"
+Repository = "https://github.com/Funnelchat20/funnelchat-python"
+Issues = "https://github.com/Funnelchat20/funnelchat-python/issues"
+
+[tool.hatch.version]
+path = "src/funnelchat/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/funnelchat"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/funnelchat", "tests", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
