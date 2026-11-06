@@ -18,6 +18,7 @@ from ._error_codes import (
     NOT_RETRYABLE_CODES,
     NUMBER_ERROR_CODES,
     SEND_ERROR_CODES,
+    TEMPLATE_SYNC_ERROR_CODES,
     is_number_quota_error,
     is_send_rule_error,
 )
@@ -75,6 +76,7 @@ __all__ = [
     "NUMBER_ERROR_CODES",
     "GROUP_ACTION_ERROR_CODES",
     "IDEMPOTENCY_ERROR_CODES",
+    "TEMPLATE_SYNC_ERROR_CODES",
     "NOT_RETRYABLE_CODES",
     "is_send_rule_error",
     "is_number_quota_error",

@@ -163,7 +163,7 @@ The same resources and methods as the [Node](https://github.com/Funnelchat20/fun
 | `client.devices` | Your WhatsApp numbers: `list` (filter by `external_reference`), `create` (a QR number), `qr`, `retrieve` (with `capabilities`), `update`, `delete`, `status`, `health`, `me`, `check_phone`, `list_connection_history`. The `id` of a number is the `device_id` you send with. |
 | `client.connect_links` | `create`, `get`, `list`, `revoke`: a page where you or your customer connect a number. |
 | `client.messages` | `send_direct`, `send`, `send_form`, `send_contact_card`, `forward`, `get` (one message by id), `list` (the history of a contact), `react`, `remove_reaction`. |
-| `client.templates` | `list`, `create`, `retrieve`, `update`, `quick_reply_buttons`, `send`, `delete`. |
+| `client.templates` | `list`, `sync` (bring a number's templates from Meta), `create`, `retrieve`, `update`, `quick_reply_buttons`, `send`, `delete`. |
 | `client.groups` | `list_by_device` (a number's live groups), `follow`, `send_message`, `retrieve_action`, `list`, `retrieve`, `metadata`, participants and their joins and leaves, messages, scheduled messages and actions. |
 | `client.webhooks` | Subscriptions (`create`, `list`, `retrieve`, `update`, `delete`, `test`, `list_deliveries`), the catalog (`events`), `verify` and `construct_event`. |
 | `client.contacts` | `list`, `create`, `upsert`, `retrieve`, `update`, `delete`, tags, custom fields, `meta_window` (the 24-hour window), notes. |
@@ -209,6 +209,8 @@ result = client.templates.send(device_id, str(template["id"]), phone="5491100000
 ```
 
 `template_variables["body"]` fills the body variables in order. A new phone becomes a contact, as with `send_direct`.
+
+If a template created in Meta does not appear in `templates.list()`, bring it with `client.templates.sync(device_id)` and list again (in a few seconds when it answers `{"status": "in_progress"}`). Only official numbers; it needs **Contacts and conversations → Edit**.
 
 #### When a send is stopped
 
@@ -347,7 +349,7 @@ client = Funnelchat(api_key="1|fc_live_sandbox", base_url="http://localhost:4010
 
 ### Pending of the spec
 
-The types come from the full unified spec of the developer portal (`spec/funnelchat.json`; where it came from, in `spec/procedencia.json`: developers-portal 99928866 of 05-11-2026, v0.6.3, with the areas at accounts v1.5.97, conversations v1.19.21 and communities v2.35.7). What production has and that spec does not describe, or describes otherwise, lives in a separate layer, `spec/pending.json`, kept in [funnelchat-node](https://github.com/Funnelchat20/funnelchat-node) and copied here unchanged, so both SDKs apply the same corrections: the account events (`device.*` and others), WhatsApp forms, `webhooks.rotate_secret`, what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, the answers of `webhooks.update` and `groups.retrieve_action`, and the events the spec only shows by an example. Generation applies each entry only while the spec does not bring it. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`).
+The types come from the full unified spec of the developer portal (`spec/funnelchat.json`; where it came from, in `spec/procedencia.json`: developers-portal `feat/plantillas-de-meta` 51c0aeb of 06-11-2026, v0.6.7, with the areas at accounts v1.5.97 (558332bcf), conversations `feat/sincronizar-plantillas` 519651f1b and communities `feat/grupos-sin-panel` 54643bbd). What production has and that spec does not describe, or describes otherwise, lives in a separate layer, `spec/pending.json`, kept in [funnelchat-node](https://github.com/Funnelchat20/funnelchat-node) and copied here unchanged, so both SDKs apply the same corrections: the account events (`device.*` and others), WhatsApp forms, `webhooks.rotate_secret`, what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, the answers of `webhooks.update` and `groups.retrieve_action`, and the events the spec only shows by an example. Generation applies each entry only while the spec does not bring it. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`).
 
 ### Development
 

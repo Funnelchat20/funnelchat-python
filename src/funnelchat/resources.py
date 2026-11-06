@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 0ffaad2b25733d28…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 38ae497ab7e6089b…) + spec/pending.json + spec/resources.json.
 
 The resources of the client: one class per piece of the API, from spec/resources.json.
 """
@@ -96,6 +96,7 @@ if TYPE_CHECKING:
         TemplatesQuickReplyButtonsResponse,
         TemplatesSendBodyTemplateVariables,
         TemplatesSendResponse,
+        TemplatesSyncResponse,
         UpdateMessageTemplateRequestButtonsItem2,
         UpdateWebhookSubscriptionRequestFilters2,
         WebhookSubscriptionCreatedResource,
@@ -645,6 +646,7 @@ class Conversations(Resource):
         kanbanSettingId: int | NotGiven = NOT_GIVEN,
         kanbanStageIds: str | NotGiven = NOT_GIVEN,
         unreadMessages: bool | NotGiven = NOT_GIVEN,
+        awaitingReply: bool | NotGiven = NOT_GIVEN,
         onlyWithMac: bool | NotGiven = NOT_GIVEN,
         cursor: str | NotGiven = NOT_GIVEN,
         updated_since: str | NotGiven = NOT_GIVEN,
@@ -686,6 +688,7 @@ class Conversations(Resource):
                 "kanbanSettingId": kanbanSettingId,
                 "kanbanStageIds": kanbanStageIds,
                 "unreadMessages": unreadMessages,
+                "awaitingReply": awaitingReply,
                 "onlyWithMac": onlyWithMac,
                 "cursor": cursor,
                 "updated_since": updated_since,
@@ -1338,6 +1341,41 @@ class Templates(Resource):
             timeout=timeout,
             max_retries=max_retries,
         )
+
+    def sync(
+        self,
+        device: int,
+        /,
+        *,
+        extra_headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        max_retries: Optional[int] = None,
+    ) -> TemplatesSyncResponse:
+        """`POST /api/v1/devices/{device}/templates`: brings into Funnelchat the templates an official
+        number has in Meta: those created or changed directly in Meta, which otherwise arrive only
+        with the daily sync; it also removes those of a WhatsApp Business account the number no
+        longer uses. Returns `{"status": "completed"}` when it is done, or `{"status":
+        "in_progress"}` when the first page (up to 100) is in and the rest keeps coming in the
+        background: list again with `list()`, in a few seconds for `in_progress`. Official numbers
+        only.
+
+        Rejections (`TEMPLATE_SYNC_ERROR_CODES`): `404` (the number does not exist or is outside the
+        key's workspace), `409 template_sync_in_progress` (one is already running for that number:
+        do not start another), `422 number_not_connected_to_meta` (a QR number, or one without a
+        WhatsApp Business account or credentials), `422 meta_rejected` (Meta refused and nothing was
+        brought; its code in `error.body["meta_code"]`) and `502 meta_unavailable` (Meta did not
+        answer).
+
+        Permission: **Contacts and conversations → Edit**.
+        """
+        return cast("TemplatesSyncResponse", self._request(
+            "POST",
+            "/api/v1/devices/{device}/templates",
+            path_params={"device": device},
+            extra_headers=extra_headers,
+            timeout=timeout,
+            max_retries=max_retries,
+        ))
 
     def create(
         self,

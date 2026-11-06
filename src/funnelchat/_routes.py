@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 0ffaad2b25733d28…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 38ae497ab7e6089b…) + spec/pending.json + spec/resources.json.
 """
 
 from typing import NamedTuple, Optional, Tuple
@@ -26,7 +26,7 @@ class WebhookEventInfo(NamedTuple):
     pending: bool
 
 
-#: Every operation of the spec (284), sorted by path.
+#: Every operation of the spec (285), sorted by path.
 ROUTES: Tuple[Route, ...] = (
     Route("GET", "/api/v1/agents", "user.index", "conversations", "conversations:read", False),
     Route("GET", "/api/v1/agents/{user}", "user.show", "conversations", "conversations:read", False),
@@ -163,6 +163,7 @@ ROUTES: Tuple[Route, ...] = (
     Route("GET", "/api/v1/devices/{device}/qr", "deviceProvisioning.qr", "accounts", "accounts:operate", True),
     Route("PUT", "/api/v1/devices/{device}/reset", "device.reset", "accounts", "accounts:operate", False),
     Route("GET", "/api/v1/devices/{device}/status", "device.status", "accounts", "accounts:read", False),
+    Route("POST", "/api/v1/devices/{device}/templates", "messageTemplate.sync", "conversations", "conversations:write", False),
     Route("DELETE", "/api/v1/devices/{device}/templates/{template}", "messageTemplate.delete", "conversations", "conversations:write", False),
     Route("POST", "/api/v1/devices/{device}/templates/{template}/send-template", "messageTemplate.send", "conversations", "conversations:send", True),
     Route("PUT", "/api/v1/devices/{device}/update-webhook-received", "device.updateWebhookReceived", "accounts", "accounts:write", False),
