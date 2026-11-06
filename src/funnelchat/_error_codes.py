@@ -17,6 +17,7 @@ __all__ = [
     "NUMBER_ERROR_CODES",
     "GROUP_ACTION_ERROR_CODES",
     "IDEMPOTENCY_ERROR_CODES",
+    "TEMPLATE_SYNC_ERROR_CODES",
     "NOT_RETRYABLE_CODES",
     "is_send_rule_error",
     "is_number_quota_error",
@@ -106,6 +107,16 @@ IDEMPOTENCY_ERROR_CODES: Dict[str, int] = {
     "idempotency_key_mismatch": 422,  # the key was already used with another body
     "invalid_idempotency_key": 422,  # the key is not 1 to 255 characters
     "operation_in_progress": 409,  # the first call with that key is still running
+}
+
+#: Rejections of bringing a number's templates from Meta (`templates.sync()`), as the spec of
+#: `POST /api/v1/devices/{device}/templates` enumerates them (developers-portal 51c0aeb, conversations
+#: 519651f1b). A number that does not exist, or is of another workspace, is a `404` without a code.
+TEMPLATE_SYNC_ERROR_CODES: Dict[str, int] = {
+    "template_sync_in_progress": 409,  # one is already running for that number: do not start another
+    "number_not_connected_to_meta": 422,  # a QR number, or one without a WhatsApp Business account or credentials
+    "meta_rejected": 422,  # Meta refused and nothing was brought; its code in `meta_code`
+    "meta_unavailable": 502,  # Meta did not answer
 }
 
 #: Codes a retry would only repeat: never retried automatically.

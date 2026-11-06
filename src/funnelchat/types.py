@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 0ffaad2b25733d28…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 38ae497ab7e6089b…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
@@ -337,6 +337,7 @@ __all__ = [
     "TemplatesQuickReplyButtonsResponse",
     "TemplatesSendBodyTemplateVariables",
     "TemplatesSendResponse",
+    "TemplatesSyncResponse",
     "UpdateContactRequest",
     "UpdateMessageTemplateRequest",
     "UpdateMessageTemplateRequestButtonsItem",
@@ -799,6 +800,10 @@ class TemplateResource(TypedDict):
     quality_updated_at: str
     quality: str
     available: bool
+
+
+class TemplatesSyncResponse(TypedDict):
+    status: Literal["in_progress", "completed"]
 
 
 class StoreMessageTemplateRequest(TypedDict):

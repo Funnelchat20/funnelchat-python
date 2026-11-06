@@ -77,6 +77,22 @@ def test_follow_a_group() -> None:
     assert json.loads(calls[0].content) == {"device_id": 3}
 
 
+def test_bring_a_numbers_templates_from_meta() -> None:
+    calls: List[httpx.Request] = []
+    client = make_client(lambda request: reply(202, {"status": "in_progress"}), calls)
+
+    assert client.templates.sync(3) == {"status": "in_progress"}
+    assert (calls[0].method, calls[0].url.path, calls[0].content) == ("POST", "/api/v1/devices/3/templates", b"")
+
+    calls.clear()
+    refused = {"error": "meta_rejected", "message": "Meta rejected it", "meta_code": 190}
+    client = make_client(lambda request: reply(422, refused), calls)
+    with pytest.raises(funnelchat.UnprocessableEntityError) as raised:
+        client.templates.sync(3)
+    assert (raised.value.code, raised.value.body["meta_code"], len(calls)) == ("meta_rejected", 190, 1)
+    assert funnelchat.TEMPLATE_SYNC_ERROR_CODES["meta_rejected"] == 422
+
+
 def test_error_mapping() -> None:
     calls: List[httpx.Request] = []
     cases = [
