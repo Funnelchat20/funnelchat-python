@@ -2,8 +2,9 @@
 
 The official Python SDK for the [Funnelchat API](https://developers-portal.funnelchat.app/docs/): connect your WhatsApp number, send messages, know when they are read, receive them and follow your groups, from Python.
 
+- Every function the developer portal publishes for an API key: see [Every function of the portal](#every-function-of-the-portal).
 - Python 3.9 or later. One dependency: [httpx](https://www.python-httpx.org/).
-- Responses are plain dicts (the decoded JSON), typed with TypedDicts generated from the OpenAPI spec, so your editor completes their keys and `json.dumps` just works.
+- Responses are plain dicts (the decoded JSON), typed with TypedDicts generated from the spec the portal publishes, so your editor completes their keys and `json.dumps` just works.
 - Safe retries (a send is never repeated by itself), pagination by iterating, typed errors with the `X-Request-Id` of each response, and webhook signature verification.
 
 ```bash
@@ -136,6 +137,35 @@ if event["type"] == "message.received":
 
 On an official number, a message received opens the 24-hour window for free text.
 
+## Every function of the portal
+
+The SDK covers every function the developer portal publishes for an API key, the ones in [More functions](https://developers-portal.funnelchat.app/docs/mas-funciones/) included: numbers and their message queue, messages, templates and WhatsApp forms, groups and group actions, contacts, conversations and attending them, tags, custom fields and notes, automations, campaigns, scheduled sends and broadcasts, statistics, boards and tickets, quick replies, lead scoring, sales, custom domains, Meta's Conversions API and costs, your account and team, alerts and webhooks.
+
+<!-- generated:functions — written by scripts/generate.py; do not edit by hand -->
+**253 operations and 56 webhook events**, in the 30 groups of the portal (named as the portal names them):
+
+- **[Primer uso](https://developers-portal.funnelchat.app/):** Mensajes.
+- **[Funciones de WhatsApp](https://developers-portal.funnelchat.app/docs/mas-funciones/whatsapp/):** Números, Grupos, Atender una conversación, Cola de mensajes de un número, Acciones de grupo, Plantillas, Formularios, Conversions API, Costos y cuentas de Meta.
+- **[Funciones de Funnelchat](https://developers-portal.funnelchat.app/docs/mas-funciones/funnelchat/):** Contactos, Conversaciones, Etiquetas, Campos personalizados, Automatizaciones, Campañas, Envíos programados, Estadísticas, Difusiones, Tableros, Tickets, Notas, Respuestas rápidas, Carpetas de flujos, Puntaje, Ventas, Dominios propios, Tu cuenta y tu equipo, Alertas, Webhooks.
+<!-- /generated:functions -->
+
+The resources ([The pieces](#the-pieces)) wrap the most used ones. Any of them is a call with [`request`](#any-route), or `paginate` for a list, by the method and path the portal shows:
+
+```python
+for broadcast in client.paginate("/api/v1/broadcasts", query={"perPage": 50}):
+    print(broadcast["id"], broadcast["name"])
+
+tickets = client.request("GET", "/api/v1/tickets")["data"]
+```
+
+`funnelchat.ROUTES` lists every operation with its group as the portal names it (`tag`), the category of the group as the portal shows it (`category`), its permission and its summary; `funnelchat.ROUTE_GROUPS` has the groups in the portal's order. An operation with `destructive=True` cannot be undone, such as deleting a number: **a script or an AI agent acting on its own should ask a person to confirm before calling it**. The docstring of such a method says so too. `destructive=None` means the spec does not say.
+
+```python
+from funnelchat import ROUTES
+
+irreversible = [(r.method, r.path, r.summary) for r in ROUTES if r.destructive]
+```
+
 ---
 
 ## Reference
@@ -160,19 +190,19 @@ The same resources and methods as the [Node](https://github.com/Funnelchat20/fun
 
 | Resource | What it has |
 |---|---|
-| `client.devices` | Your WhatsApp numbers: `list` (filter by `external_reference`), `create` (a QR number), `qr`, `retrieve` (with `capabilities`), `update`, `delete`, `status`, `health`, `me`, `check_phone`, `list_connection_history`. The `id` of a number is the `device_id` you send with. |
+| `client.devices` | Your WhatsApp numbers: `list` (filter by `external_reference`), `create` (a QR number), `qr`, `retrieve` (with `capabilities`), `update`, `delete`, `status`, `health`, `list_connection_history`. The `id` of a number is the `device_id` you send with. |
 | `client.connect_links` | `create`, `get`, `list`, `revoke`: a page where you or your customer connect a number. |
 | `client.messages` | `send_direct`, `send`, `send_form`, `send_contact_card`, `forward`, `get` (one message by id), `list` (the history of a contact), `react`, `remove_reaction`. |
-| `client.templates` | `list`, `sync` (bring a number's templates from Meta), `create`, `retrieve`, `update`, `quick_reply_buttons`, `send`, `delete`. |
-| `client.groups` | `list_by_device` (a number's live groups), `follow`, `send_message`, `retrieve_action`, `list`, `retrieve`, `metadata`, participants and their joins and leaves, messages, scheduled messages and actions. |
+| `client.templates` | `list`, `sync` (bring a number's templates from Meta), `create`, `retrieve`, `update`, `send`, `delete`. |
+| `client.groups` | `list_by_device` (a number's live groups), `follow`, `send_message`, `retrieve_action`, `list`, `retrieve`, `metadata`, participants and their joins and leaves, scheduled messages and actions. |
 | `client.webhooks` | Subscriptions (`create`, `list`, `retrieve`, `update`, `delete`, `test`, `list_deliveries`), the catalog (`events`), `verify` and `construct_event`. |
 | `client.contacts` | `list`, `create`, `upsert`, `retrieve`, `update`, `delete`, tags, custom fields, `meta_window` (the 24-hour window), notes. |
-| `client.conversations` | `list`, `update`, counters, mark everything as read or unread. |
+| `client.conversations` | `list`, counters, mark everything as read or unread. |
 | `client.forms` | WhatsApp forms: `list`, `templates`, `create`, `retrieve`, `update`, `delete`, `create_version`, `sync`, `publish`, numbers, `versions`, answers and `metrics`. |
 | `client.tags` | `list`, `create`, `retrieve`, `update`, `delete`, `list_contacts`. |
 | `client.custom_fields` | `list`, `create`, `retrieve`, `update`, `delete`. |
 
-Each method's docstring says what it does and which permission it needs. An argument you leave out is not sent; `None` is sent as `null`. A field the SDK does not know yet goes in `extra_body` (or `extra_query`), and any header in `extra_headers`. Every method also takes `timeout` and `max_retries`.
+Every other function of the portal is a call with `request` or `paginate`: see [Every function of the portal](#every-function-of-the-portal). Each method's docstring says what it does, which permission it needs and, when it cannot be undone, that a person should confirm it first. An argument you leave out is not sent; `None` is sent as `null`. A field the SDK does not know yet goes in `extra_body` (or `extra_query`), and any header in `extra_headers`. Every method also takes `timeout` and `max_retries`.
 
 ### Permissions
 
@@ -270,7 +300,7 @@ ok = funnelchat.webhooks.verify(raw_body, signature_header, secret)             
 - The algorithm is the portal's: `X-Funnelchat-Signature: t=<unix>,v1=<hex>`, where `v1` is the HMAC-SHA256, with the full secret, of `"<t>." + raw body`, compared in constant time. The tests use the portal's vectors.
 - Deduplicate by `event["id"]`: a retry brings the same one. New event types can arrive before this SDK knows them: answer `2xx` to the ones you do not handle.
 - `funnelchat.types.WebhookEvent` is the union of every event, discriminated by `type`: after `if event["type"] == "message.status_changed":`, your type checker knows the keys of `event["data"]`. `funnelchat.WEBHOOK_EVENTS` lists the types with their status (`live` or `planned`).
-- `client.webhooks.rotate_secret()` is not open to API keys (`403 route_not_available`): rotate the secret from the panel.
+- To rotate the secret, use the panel: that route is not open to API keys.
 
 ### Pagination
 
@@ -333,7 +363,7 @@ for broadcast in client.paginate("/api/v1/broadcasts"):
     print(broadcast)
 ```
 
-`request` takes `query`, `body`, `headers`, `timeout`, `max_retries`, `retry_send` and `idempotency_key`, follows the same retry rules and returns the decoded body. `funnelchat.ROUTES` lists every operation of the spec, with its area and its permission.
+`request` takes `path_params`, `query`, `body`, `headers`, `timeout`, `max_retries`, `retry_send` and `idempotency_key`, follows the same retry rules and returns the decoded body. It calls any route: every function of the portal without a method, or one the spec adds after this version of the SDK. `funnelchat.ROUTES` lists every operation the spec publishes, with its area, its permission, its group and category in the portal and whether it can be undone (`destructive`); `funnelchat.ROUTE_GROUPS` has the groups of the portal.
 
 ### Test against the sandbox
 
@@ -349,13 +379,30 @@ client = Funnelchat(api_key="1|fc_live_sandbox", base_url="http://localhost:4010
 
 ### Pending of the spec
 
-The types come from the full unified spec of the developer portal (`spec/funnelchat.json`; where it came from, in `spec/procedencia.json`: developers-portal `feat/plantillas-de-meta` 51c0aeb of 06-11-2026, v0.6.7, with the areas at accounts v1.5.97 (558332bcf), conversations `feat/sincronizar-plantillas` 519651f1b and communities `feat/grupos-sin-panel` 54643bbd). What production has and that spec does not describe, or describes otherwise, lives in a separate layer, `spec/pending.json`, kept in [funnelchat-node](https://github.com/Funnelchat20/funnelchat-node) and copied here unchanged, so both SDKs apply the same corrections: the account events (`device.*` and others), WhatsApp forms, `webhooks.rotate_secret`, what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, the answers of `webhooks.update` and `groups.retrieve_action`, and the events the spec only shows by an example. Generation applies each entry only while the spec does not bring it. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`).
+The types come from the spec the developer portal publishes (`spec/funnelchat.json`; where it came from, its URL, the portal's version and its `sha256`, in `spec/procedencia.json`). Where production answers otherwise than that spec says, or the spec shows an event only by an example or without one, a separate layer corrects it: `spec/pending.json`, kept in [funnelchat-node](https://github.com/Funnelchat20/funnelchat-node) and copied here unchanged, so both SDKs apply the same corrections. Generation applies each entry **only while the spec still says exactly what the entry corrects**, and each entry cites the production release it was read in:
+
+- what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, and the answers of `webhooks.update` and `groups.retrieve_action`;
+- the `data` of the events the spec shows only by an example, or without one, such as the `device.*` events, `message.received`, `message.status_changed` and the group events (`group.message_received` and `group.reaction_added` carry `message["uid"]`, as production sends them, though the published example says `id`).
+
+The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number.
+
+### Upgrading from 0.1
+
+0.4.0 types only what the portal publishes for an API key, and takes the version of the Node and PHP SDKs, which cover the same functions. Routes the portal does not publish are closed to keys in production, so these methods are gone:
+
+- `devices.me` and `devices.check_phone`;
+- `templates.quick_reply_buttons`;
+- `groups.list_messages` (sending to a group, `groups.send_message`, stays);
+- `conversations.update`;
+- `webhooks.rotate_secret` (rotate the secret from the panel).
+
+`funnelchat.ROUTES` no longer has the other routes the portal does not publish: the panel's webhook endpoints (`/api/v1/webhooks/endpoints…`; the subscriptions of a key are `/api/v1/webhooks`), `POST /api/v1/lead-score/events`, the logs of numbers (`/api/v1/devices/logs` and `/api/v1/devices/{device}/logs…`), `POST /api/v1/devices/{device}/extension-token`, the disconnect survey, the chats and open conversations of a number, the `update-webhook-received…` routes of a number, `GET /api/v1/stats/countries`, the participants and webhooks of a campaign, `GET /api/v1/flows/{flow}/active-contacts-list`, and creating, editing, verifying, testing and deleting an alert destination (`/api/v1/alerts/destinations…`; the rest of `/api/v1/alerts` is published). `WEBHOOK_EVENTS` and `WebhookEventType` no longer have the events the portal does not publish: `ai_quota.low_balance`, `ai_quota.topup_succeeded`, `ai_quota.topup_failed`, `billing.plan_blocked` and `subscription.expiring`. `Route` gains `category`, `tag`, `summary` and `destructive` (before `pending`), so unpack it by name, not by position.
 
 ### Development
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e . pytest
-.venv/bin/python scripts/generate.py --check   # the generated files are up to date with spec/
+.venv/bin/python scripts/generate.py --check   # the generated files and the README block are up to date with spec/
 .venv/bin/python -m pytest                     # no network and no keys: a mocked transport
 python -m build                                # or: uv build
 ```
@@ -363,14 +410,17 @@ python -m build                                # or: uv build
 Everything generated comes from one script, standard library only:
 
 ```bash
-python scripts/generate.py --spec <path>/funnelchat-completa.json          # a new full unified spec of the portal
+curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.13
 python scripts/generate.py --pending <funnelchat-node>/spec/pending.json   # the pending layer, from funnelchat-node
 python scripts/generate.py                                                 # again from spec/, for example after editing spec/resources.json
 ```
 
-1. With `--spec`, it copies the spec to `spec/funnelchat.json` and writes `spec/procedencia.json`: repository, branch, commit, date and `sha256`. The portal builds its full spec in `generated/specs/funnelchat-completa.json`, which git ignores, so a copy says where it came from on the command line: `--expect-sha256 <hex>`, `--source repository=… --source branch=… --source commit=… --source path=…` and `--domain <area>=<sha>@<branch>@<snapshot_at>`; those fields are marked as declared. Never generate from the published `/specs/`: it only carries what the portal shows. With `--pending`, it copies the layer and records its checkout, commit and `sha256`.
-2. It merges `spec/pending.json` with the same rules as funnelchat-node, and lists the entries a new spec made obsolete.
-3. It writes `src/funnelchat/_routes.py` (every operation, with area and permission: the SDK reads it to know which requests are sends), `src/funnelchat/types.py` and `src/funnelchat/resources.py` (each method of `spec/resources.json`, with its parameters and response from the spec).
+1. With `--spec`, it copies the spec to `spec/funnelchat.json` and writes `spec/procedencia.json`: where it came from and the `sha256` of the file. Generate only from the spec the portal publishes (`/specs/funnelchat.json`): it carries every function an API key can use, and nothing closed to keys (the portal's full unified spec also has internal routes and routes closed to keys). For a downloaded file, say on the command line where it came from (`--source url=…`) and the version of the portal that published it (`--source portal_version=…`); `--expect-sha256 <hex>` refuses a file whose `sha256` is not the one announced. From a checkout of a repository, its repository, branch and commit are read from git (`--source key=value` and `--domain <area>=<sha>@<branch>@<snapshot_at>` declare what git cannot say; those fields are marked as declared). With `--pending`, it copies the layer and records its checkout, commit and `sha256`.
+2. It applies `spec/pending.json` with the same rules as funnelchat-node: only while the spec still says what an entry corrects, never adding an operation or an event the spec does not publish. It lists the entries a new spec made unnecessary, and those it does not publish, so they can be deleted (in funnelchat-node).
+3. It writes `src/funnelchat/_routes.py` (every operation, with area, permission, group, category and whether it can be undone, and the groups of the portal: the SDK reads it to know which requests are sends), `src/funnelchat/types.py`, `src/funnelchat/resources.py` (each method of `spec/resources.json`, with its parameters and response from the spec) and the block of [Every function of the portal](#every-function-of-the-portal) in this README. The category of each group comes from the spec: `x-fc-categoria` on its `x-tagGroups` entry, named and linked as `x-fc-categorias` lists it.
+
+**Regenerating never needs anything edited by hand.** A new operation of the spec is in `funnelchat.ROUTES`, called with `request` or `paginate`. A method of `spec/resources.json` whose operation the spec no longer publishes is left out of the SDK, and the generation says which one, so it can be deleted from there.
 
 ```
 spec/                  the spec, the pending layer, their provenance and resources.json (the methods)

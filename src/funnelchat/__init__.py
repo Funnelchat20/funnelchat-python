@@ -40,7 +40,7 @@ from ._errors import (
 )
 from ._pagination import Page
 from ._resource import NOT_GIVEN, NotGiven
-from ._routes import ROUTES, WEBHOOK_EVENTS, Route, WebhookEventInfo
+from ._routes import ROUTE_GROUPS, ROUTES, WEBHOOK_EVENTS, Route, RouteGroup, WebhookEventInfo
 from ._version import __version__
 
 __all__ = [
@@ -54,8 +54,10 @@ __all__ = [
     "NotGiven",
     "webhooks",
     "ROUTES",
+    "ROUTE_GROUPS",
     "WEBHOOK_EVENTS",
     "Route",
+    "RouteGroup",
     "WebhookEventInfo",
     "FunnelchatError",
     "APIError",

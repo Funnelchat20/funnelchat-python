@@ -2,40 +2,52 @@
 """The single generation script of the SDK. Standard library only, Python 3.9 or later.
 
     python scripts/generate.py                    regenerate from spec/funnelchat.json
-    python scripts/generate.py --spec <file>      copy a new full unified spec of the portal into
-                                                  spec/, record where it came from in
-                                                  spec/procedencia.json, then regenerate
+    python scripts/generate.py --spec <file>      copy a new spec of the portal into spec/, record
+                                                  where it came from in spec/procedencia.json, then
+                                                  regenerate
     python scripts/generate.py --pending <file>   copy spec/pending.json from a checkout of
                                                   funnelchat-node, record where it came from in
                                                   spec/procedencia.json, then regenerate
-    python scripts/generate.py --check            regenerate in memory and fail if a generated file
-                                                  differs
+    python scripts/generate.py --check            regenerate in memory and fail if a generated file,
+                                                  or the generated block of README.md, differs
 
-With --spec, when the file is not inside a checkout of the repository it was built from (a copy, or
-a build output git ignores), say where it came from: `--source key=value` (repository, path, branch,
-commit, commit_date, file_tracked_in_git), recorded as declared, not read from git;
-`--domain <domain>=<sha>@<branch>@<snapshot_at>` for the snapshot of an area the spec does not date
-itself; and `--expect-sha256 <hex>` to refuse a file that is not the one announced. The same flags,
-the same file and the same merge rules as `npm run generate` in funnelchat-node.
+The spec is the one the developer portal publishes (https://developers-portal.funnelchat.app/specs/funnelchat.json):
+every function an API key can use, and nothing closed to keys. The SDK types only what it brings.
+
+With --spec, when the file is not inside a checkout of the repository it was built from (a download,
+a copy, or a build output git ignores), say where it came from: `--source key=value` (url,
+portal_version, repository, path, branch, commit, commit_date, file_tracked_in_git), recorded as
+declared, not read from git; `--domain <domain>=<sha>@<branch>@<snapshot_at>` for the snapshot of an
+area the spec does not date itself; and `--expect-sha256 <hex>` to refuse a file that is not the one
+announced. The same flags, the same file and the same merge rules as `npm run generate` in
+funnelchat-node.
 
 Steps:
   1. (with --spec / --pending) copy the file and record its provenance.
   2. Merge spec/pending.json (the "pending of the spec" layer, kept in funnelchat-node and copied
-     here as is) into the spec: every entry applies only while the spec lacks it, and the report
-     lists the entries a new spec made obsolete.
-  3. src/funnelchat/_routes.py   every operation (method, path, area, permission) and the event
-                                 catalog. The SDK reads the permission to know which requests are
-                                 sends, which are never retried automatically.
+     here as is) into the spec. The layer corrects what the spec publishes and never adds to it: an
+     operation or an event the spec does not publish is not typed. Every entry applies only while
+     the spec still lacks it, or still says what the entry corrects, and the report lists the
+     entries a new spec made obsolete.
+  3. src/funnelchat/_routes.py   every operation (method, path, area, permission, its group and the
+                                 category of the group as the portal shows them, whether it cannot
+                                 be undone), the portal's groups and the event catalog. The SDK
+                                 reads the permission to know which requests are sends, which are
+                                 never retried automatically.
   4. src/funnelchat/types.py     TypedDicts: the schemas the methods of the SDK use, the response of
                                  each method and every webhook event (from its schema when it lists
                                  its properties and which are required, otherwise from its example).
   5. src/funnelchat/resources.py the resources of spec/resources.json: each method's path
                                  parameters, keyword arguments (query or body) and return type come
-                                 from its operation.
+                                 from its operation. A method whose operation is no longer in the
+                                 spec is left out, and the report says which one.
+  6. README.md                   the block between README_START and README_END: how many operations
+                                 and events the SDK covers, and the portal's groups by category.
 
-Nothing in the generated files is edited by hand, and they name a permission only as the panel does
-(**WhatsApp numbers → View**), never by its literal, except in the `permission` of the route table:
-the generation fails if they do.
+Regenerating with a new spec never needs anything edited by hand. Nothing in the generated files
+(or in that block of the README) is edited by hand, and they name a permission only as the panel
+does (**WhatsApp numbers → View**), never by its literal, except in the `permission` of the route
+table: the generation fails if they do.
 """
 
 from __future__ import annotations
@@ -58,6 +70,7 @@ SPEC_FILE = ROOT / "spec" / "funnelchat.json"
 PROVENANCE_FILE = ROOT / "spec" / "procedencia.json"
 PENDING_FILE = ROOT / "spec" / "pending.json"
 RESOURCES_FILE = ROOT / "spec" / "resources.json"
+README_FILE = ROOT / "README.md"
 PACKAGE = ROOT / "src" / "funnelchat"
 HTTP_METHODS = ["get", "put", "post", "delete", "patch"]
 
@@ -80,12 +93,12 @@ class GenerationError(Exception):
 
 # ---- Arguments ---------------------------------------------------------------------------------
 
-DECLARABLE_SOURCE_KEYS = ("repository", "path", "branch", "commit", "commit_date", "file_tracked_in_git")
+DECLARABLE_SOURCE_KEYS = ("url", "portal_version", "repository", "path", "branch", "commit", "commit_date", "file_tracked_in_git")
 
 
 def parse_args(argv: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Regenerate the SDK from spec/.")
-    parser.add_argument("--spec", help="a new full unified spec of the portal to copy into spec/")
+    parser.add_argument("--spec", help="a new spec the portal publishes, to copy into spec/")
     parser.add_argument("--source", action="append", default=[], help="key=value: where the spec came from")
     parser.add_argument("--domain", action="append", default=[], help="<domain>=<sha>@<branch>@<snapshot_at>")
     parser.add_argument("--expect-sha256", dest="expect_sha256", help="refuse a spec with another sha256")
@@ -175,7 +188,9 @@ def import_spec(source: str, declared: Dict[str, Any], declared_domains: Dict[st
     if expect and sha256(data) != expect.lower():
         raise GenerationError(f"{source}: its sha256 is {sha256(data)}, not the expected {expect}.")
     spec = json.loads(data.decode("utf-8"))
-    top, src = git_source(path)
+    top, found = git_source(path)
+    # The public URL and the portal's version are never read from git: only `--source` says them.
+    src: Dict[str, Any] = {"url": None, "portal_version": None, **found}
     domains = []
     for s in spec.get("x-fc-sources", []):
         given = None if s.get("sha") else declared_domains.get(s.get("domain"))
@@ -223,7 +238,8 @@ def import_spec(source: str, declared: Dict[str, Any], declared_domains: Dict[st
     SPEC_FILE.parent.mkdir(parents=True, exist_ok=True)
     SPEC_FILE.write_bytes(data)
     write_provenance(provenance)
-    print(f"spec: copied from {src.get('path') or path} ({src.get('branch') or '?'} @ {(src.get('commit') or '?')[:8]})")
+    where = src.get("url") or src.get("path") or path
+    print(f"spec: copied from {where} ({src.get('branch') or '?'} @ {(src.get('commit') or '?')[:8]}, sha256 {sha256(data)[:16]}…)")
 
 
 def import_pending(source: str) -> None:
@@ -287,28 +303,26 @@ def event_type_of_key(key: str) -> str:
 
 
 def merge_pending(spec: Dict[str, Any], pending: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
+    """Merges the pending layer into a copy of the spec. It corrects what the spec publishes and never
+    adds to it: an operation the spec does not publish is not typed, and an event it does not publish
+    is not added (the report lists it as `unpublished`)."""
     merged = copy.deepcopy(spec)
     merged.setdefault("components", {}).setdefault("schemas", {})
     merged.setdefault("paths", {})
     merged.setdefault("webhooks", {})
     schemas = merged["components"]["schemas"]
-    report: Dict[str, List[str]] = {"applied": [], "superseded": [], "missing": []}
+    report: Dict[str, List[str]] = {"applied": [], "superseded": [], "missing": [], "unpublished": []}
+
+    if pending.get("paths"):
+        raise GenerationError(
+            "spec/pending.json: `paths` would add operations the portal does not publish, and the SDK types only "
+            "what it publishes. Delete them; to correct a published operation, use `operationPatches` or `responsePatches`."
+        )
 
     for name, schema in pending.get("components", {}).get("schemas", {}).items():
         if name in schemas:
             raise GenerationError(f"spec/pending.json: the schema {name} already exists in the spec; rename it.")
         schemas[name] = schema
-
-    for path, item in pending.get("paths", {}).items():
-        for method in HTTP_METHODS:
-            if method not in item:
-                continue
-            label = f"{method.upper()} {path}"
-            if method in merged["paths"].get(path, {}):
-                report["superseded"].append(label)
-                continue
-            merged["paths"].setdefault(path, {})[method] = item[method]
-            report["applied"].append(label)
 
     for patch in pending.get("operationPatches", []):
         names = list(patch.get("requestBodyProperties", {})) + [p["name"] for p in patch.get("parameters", [])]
@@ -378,20 +392,107 @@ def merge_pending(spec: Dict[str, Any], pending: Dict[str, Any]) -> Tuple[Dict[s
         op["x-fc-pending-response"] = patch.get("x-fc-pending")
         report["applied"].append(label)
 
+    # An event of the layer replaces the spec's while it still matches `x-fc-replace-while`; one the
+    # spec does not publish is not added.
     snapshot_types = {event_type_of_key(key): key for key in merged["webhooks"]}
     for event_type, item in pending.get("webhooks", {}).items():
         label = f"webhook {event_type}"
         current = snapshot_types.get(event_type)
-        if current:
-            replace_while = item.get("post", {}).get("x-fc-replace-while")
-            if not replace_while or not matches(merged["webhooks"][current].get("post", {}), replace_while):
-                report["superseded"].append(label)
-                continue
-            del merged["webhooks"][current]
+        if not current:
+            report["unpublished"].append(label)
+            continue
+        replace_while = item.get("post", {}).get("x-fc-replace-while")
+        if not replace_while or not matches(merged["webhooks"][current].get("post", {}), replace_while):
+            report["superseded"].append(label)
+            continue
+        del merged["webhooks"][current]
         merged["webhooks"][event_type] = item
         report["applied"].append(label)
 
     return merged, report
+
+
+# ---- Groups and categories of the portal (the same rules as funnelchat-node's scripts/generate.mjs) --
+
+
+def category_key(node: Any) -> Optional[str]:
+    """The key of a node that gives a category: `x-fc-categoria`, `x-fc-category`, `x-fc-categorias`…"""
+    if not isinstance(node, dict):
+        return None
+    return next((key for key in node if re.match(r"x-fc-categor", key, re.I)), None)
+
+
+def category_name(value: Any) -> Optional[str]:
+    """A category as the spec writes it: a name, or an object with its name (or only its id)."""
+    if isinstance(value, str):
+        return value.strip() or None
+    if isinstance(value, dict):
+        for key in ("name", "nombre", "title", "titulo", "label", "id"):
+            if value.get(key) is not None:
+                return category_name(value[key])
+    return None
+
+
+def category_catalog(spec: Dict[str, Any]) -> Dict[str, Dict[str, Optional[str]]]:
+    """The categories the spec lists at its root, in the portal's order (`x-fc-categorias: [{id, title,
+    url}]`, or `{id: title}`): id -> its name and the page of the portal that shows it, so a group
+    that names its category by id shows the name the portal shows."""
+    key = category_key(spec)
+    listed = spec.get(key) if key else None
+    if isinstance(listed, list):
+        entries = [((item or {}).get("id") or (item or {}).get("slug") or (item or {}).get("key"), item) for item in listed if isinstance(item, dict)]
+    elif isinstance(listed, dict):
+        entries = list(listed.items())
+    else:
+        entries = []
+    catalog: Dict[str, Dict[str, Optional[str]]] = {}
+    for category_id, item in entries:
+        name = category_name(item)
+        url = item.get("url") if isinstance(item, dict) and isinstance(item.get("url"), str) else None
+        if isinstance(category_id, str) and name:
+            catalog[category_id] = {"name": name, "url": url}
+    return catalog
+
+
+def portal_groups(spec: Dict[str, Any]) -> Tuple[Dict[str, Dict[str, Any]], List[str], List[Dict[str, Optional[str]]]]:
+    """The groups of operations (the `tags`) in the portal's order (`x-tagGroups`, then `tags`), each one
+    with its description and its category; the warnings; and the categories of the spec's list.
+
+    The category is only what the spec says: an `x-fc-categor…` key on the tag or on its `x-tagGroups`
+    entry (a name, or the id of a category of `x-fc-categorias`), or the name of an `x-tagGroups` entry
+    that groups tags under another name (several tags, or one with a name of its own). A category key
+    whose value it cannot read leaves that group without one and is reported as a warning."""
+    tags = {tag.get("name"): tag for tag in spec.get("tags", []) if isinstance(tag, dict)}
+    catalog = category_catalog(spec)
+    groups: Dict[str, Dict[str, Any]] = {}
+    warnings: List[str] = []
+
+    def read_category(node: Any, where: str) -> Optional[str]:
+        key = category_key(node)
+        if not key:
+            return None
+        name = category_name(node[key])
+        if not name:
+            warnings.append(f"{where}: cannot read the category in `{key}` ({json.dumps(node[key], ensure_ascii=False)}); teach category_name in scripts/generate.py.")
+            return None
+        return (catalog.get(name) or {}).get("name") or name
+
+    def add(name: str, group_category: Optional[str]) -> None:
+        if name in groups:
+            return
+        tag = tags.get(name)
+        category = read_category(tag, f"tag {name}") or group_category
+        groups[name] = {"name": name, "category": category, "description": (tag or {}).get("description")}
+
+    for entry in spec.get("x-tagGroups", []):
+        entry_tags = entry.get("tags", [])
+        named = len(entry_tags) > 1 or (len(entry_tags) == 1 and entry.get("name") != entry_tags[0])
+        category = read_category(entry, f"x-tagGroups {entry.get('name')}") or (category_name(entry.get("name")) if named else None)
+        for name in entry_tags:
+            add(name, category)
+    for name in tags:
+        add(name, None)
+    return groups, warnings, list(catalog.values())
 
 
 # ---- Permissions: the names of the panel ---------------------------------------------------------
@@ -807,15 +908,53 @@ def collect_events(merged: Dict[str, Any]) -> List[Dict[str, Any]]:
     return sorted(by_type.values(), key=lambda e: e["type"])
 
 
-def generate_routes(merged: Dict[str, Any], events: List[Dict[str, Any]], spec_hash: str) -> str:
+def route_rows(merged: Dict[str, Any], groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Every operation of the merged spec, sorted by path and method, with its group and category."""
     rows = []
     for path, item in merged["paths"].items():
         for method in HTTP_METHODS:
             op = item.get(method)
-            if op:
-                rows.append((path, method.upper(), op))
-    rows.sort(key=lambda r: (r[0], r[1]))
+            if not op:
+                continue
+            tag = (op.get("tags") or [None])[0]
+            destructive = op.get("x-fc-destructive")
+            rows.append(
+                {
+                    "method": method.upper(),
+                    "path": path,
+                    "operation_id": op.get("operationId"),
+                    "domain": op.get("x-fc-domain"),
+                    "permission": op.get("x-fc-permission"),
+                    "category": (groups.get(tag) or {}).get("category") if tag else None,
+                    "tag": tag,
+                    "summary": op.get("summary"),
+                    "destructive": destructive if isinstance(destructive, bool) else None,
+                    "pending": bool(op.get("x-fc-pending")),
+                }
+            )
+    return sorted(rows, key=lambda r: (r["path"], r["method"]))
 
+
+def group_rows(rows: List[Dict[str, Any]], groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """The groups that have operations, in the portal's order; a tag the spec does not list goes last."""
+    count: Dict[str, int] = {}
+    for row in rows:
+        if row["tag"]:
+            count[row["tag"]] = count.get(row["tag"], 0) + 1
+    names = list(groups) + sorted(tag for tag in count if tag not in groups)
+    return [
+        {
+            "name": name,
+            "category": (groups.get(name) or {}).get("category"),
+            "operations": count[name],
+            "description": (groups.get(name) or {}).get("description"),
+        }
+        for name in names
+        if name in count
+    ]
+
+
+def generate_routes(rows: List[Dict[str, Any]], group_list: List[Dict[str, Any]], events: List[Dict[str, Any]], spec_hash: str) -> str:
     def s(value: Any) -> str:
         return "None" if value is None else json.dumps(value, ensure_ascii=False)
 
@@ -825,14 +964,31 @@ def generate_routes(merged: Dict[str, Any], events: List[Dict[str, Any]], spec_h
         "",
         "",
         "class Route(NamedTuple):",
-        '    """One operation of the public API. `pending`: taken from spec/pending.json, not from the spec."""',
+        '    """One operation of the public API, as the developer portal publishes it."""',
         "",
         "    method: str",
         "    path: str",
         "    operation_id: Optional[str]",
         "    domain: Optional[str]",
         "    permission: Optional[str]",
+        "    #: The category of its group as the portal shows it, or `None` while the spec does not give one.",
+        "    category: Optional[str]",
+        "    #: Its group, as the portal names it (see `ROUTE_GROUPS`).",
+        "    tag: Optional[str]",
+        "    summary: Optional[str]",
+        "    #: `True`: it cannot be undone, so confirm before calling it. `None`: the spec does not say.",
+        "    destructive: Optional[bool]",
+        "    #: Corrected by spec/pending.json, where production answers otherwise than the spec says.",
         "    pending: bool",
+        "",
+        "",
+        "class RouteGroup(NamedTuple):",
+        '    """One group of operations as the portal shows it: its name (the `tag` of its routes), category and description."""',
+        "",
+        "    name: str",
+        "    category: Optional[str]",
+        "    operations: int",
+        "    description: Optional[str]",
         "",
         "",
         "class WebhookEventInfo(NamedTuple):",
@@ -844,15 +1000,18 @@ def generate_routes(merged: Dict[str, Any], events: List[Dict[str, Any]], spec_h
         "    pending: bool",
         "",
         "",
-        f"#: Every operation of the spec ({len(rows)}), sorted by path.",
+        f"#: Every operation the spec publishes ({len(rows)}), sorted by path.",
         "ROUTES: Tuple[Route, ...] = (",
     ]
-    for path, method, op in rows:
+    for r in rows:
         lines.append(
-            f"    Route({s(method)}, {s(path)}, {s(op.get('operationId'))}, {s(op.get('x-fc-domain'))}, "
-            f"{s(op.get('x-fc-permission'))}, {bool(op.get('x-fc-pending'))}),"
+            f"    Route({s(r['method'])}, {s(r['path'])}, {s(r['operation_id'])}, {s(r['domain'])}, {s(r['permission'])}, "
+            f"{s(r['category'])}, {s(r['tag'])}, {s(r['summary'])}, {r['destructive']}, {r['pending']}),"
         )
-    lines += [")", "", f"#: Every webhook event type the spec knows ({len(events)}).", "WEBHOOK_EVENTS: Tuple[WebhookEventInfo, ...] = ("]
+    lines += [")", "", f"#: The groups of operations ({len(group_list)}), in the portal's order.", "ROUTE_GROUPS: Tuple[RouteGroup, ...] = ("]
+    for g in group_list:
+        lines.append(f"    RouteGroup({s(g['name'])}, {s(g['category'])}, {g['operations']}, {s(g['description'])}),")
+    lines += [")", "", f"#: Every webhook event type the spec publishes ({len(events)}).", "WEBHOOK_EVENTS: Tuple[WebhookEventInfo, ...] = ("]
     for e in events:
         domains = "(" + "".join(f"{s(d)}, " for d in e["domains"]).rstrip(" ") + ")" if e["domains"] else "()"
         lines.append(f"    WebhookEventInfo({s(e['type'])}, {domains}, {s(e['status'])}, {e['pending']}),")
@@ -860,13 +1019,64 @@ def generate_routes(merged: Dict[str, Any], events: List[Dict[str, Any]], spec_h
     return "\n".join(lines)
 
 
+# ---- Step 6: the generated block of the README ------------------------------------------------------
+
+README_START = "<!-- generated:functions — written by scripts/generate.py; do not edit by hand -->"
+README_END = "<!-- /generated:functions -->"
+
+
+def readme_block(group_list: List[Dict[str, Any]], operations: int, events: int, catalog: Optional[List[Dict[str, Optional[str]]]] = None) -> str:
+    """How many operations and events the SDK covers and the portal's groups: by category once the spec
+    gives them, in the order of the spec's list of categories (`catalog`, with the page of each one)
+    and then as they come; a group without one goes last."""
+    catalog = catalog or []
+    used: List[Optional[str]] = []
+    for g in group_list:
+        if g["category"] not in used:
+            used.append(g["category"])
+    known = [c for c in catalog if c["name"] in used]
+    categories: List[Optional[str]] = [c["name"] for c in known]
+    categories += [name for name in used if name is not None and name not in categories]
+    if None in used:
+        categories.append(None)
+
+    def names(category: Optional[str]) -> str:
+        return ", ".join(g["name"] for g in group_list if g["category"] == category)
+
+    def title(name: Optional[str]) -> str:
+        if name is None:
+            return "Without a category"
+        url = next((c["url"] for c in known if c["name"] == name), None)
+        return f"[{name}]({url})" if url else name
+
+    lines = [
+        f"**{operations} operations and {events} webhook events**, in the {len(group_list)} groups of the portal (named as the portal names them):",
+        "",
+    ]
+    if categories == [None]:
+        lines.append(f"- {names(None)}.")
+    else:
+        lines += [f"- **{title(category)}:** {names(category)}." for category in categories]
+    return "\n".join(lines)
+
+
+def generate_readme(current: str, block: str) -> str:
+    """The README with its generated block replaced; fails if the markers are missing."""
+    start, end = current.find(README_START), current.find(README_END)
+    if start == -1 or end == -1 or end < start:
+        raise GenerationError(f"README.md lacks the generated block: put {README_START} and {README_END} where it goes.")
+    return f"{current[: start + len(README_START)]}\n{block}\n{current[end:]}"
+
+
 # ---- Steps 4 and 5: types and resources -----------------------------------------------------------
 
 
 # What every event carries and the spec does not describe yet (funnelchat-node keeps it in
 # src/pending/events.ts): the workspace of the event, in production since accounts v1.5.97
-# (558332bcf, 04-11-2026, Webhook/Services/EventWorkspaceRouting.php:65-85). `None` only for an
-# account with no workspace at all. When the spec describes it, it stops being added.
+# (04-11-2026), on every delivery: the events relayed from the other areas, the account's own and
+# `webhook.test`. The spec the portal publishes shows it only in the examples of some events, and in
+# no schema. `None` only for an account with no workspace at all. When the spec describes it in an
+# event's schema, it stops being added there.
 PENDING_COMMON_EVENT_DATA = {"workspace_id": ("Optional[int]", True)}
 
 
@@ -987,6 +1197,8 @@ class MethodSpec:
         doc = self.method["doc"]
         if op.permission:
             doc += f"\n\nPermission: **{PERMISSION_NAMES.get(op.permission, 'not named in the panel')}**."
+        if op.op.get("x-fc-destructive") is True:
+            doc += "\n\nIt cannot be undone: a script or an AI agent acting on its own should ask a person to confirm before calling it."
         if skipped:
             doc += f"\n\nOther fields ({', '.join(skipped)}): pass them in `extra_query` or `extra_body`."
         lines += docstring(doc, "        ")
@@ -1087,9 +1299,12 @@ class MethodSpec:
 
 def generate_types_and_resources(
     merged: Dict[str, Any], manifest: Dict[str, Any], events: List[Dict[str, Any]], spec_hash: str
-) -> Tuple[str, str, List[str]]:
+) -> Tuple[str, str, List[str], List[str]]:
+    """types.py, resources.py, the notes of the generation and the methods left out: those of
+    spec/resources.json whose operation the spec no longer publishes."""
     types = Types(merged["components"]["schemas"])
     warnings: List[str] = []
+    left_out: List[str] = []
     resource_blocks: List[str] = []
     resources = manifest["resources"]
     for name in [r["class"] for r in resources] + ["ClientResources", "Page", "NotGiven", "Resource"]:
@@ -1102,6 +1317,10 @@ def generate_types_and_resources(
         lines = [f"class {resource['class']}({', '.join(['Resource'] + mixins)}):"]
         lines += docstring(resource["doc"], "    ")
         for method in resource["methods"]:
+            http_method, _, path = method["op"].partition(" ")
+            if http_method.lower() not in merged["paths"].get(path, {}):
+                left_out.append(f"{resource['attribute']}.{method['name']} ({method['op']})")
+                continue
             spec = MethodSpec(resource, method, Operation(merged, method["op"]), types)
             lines += ["", spec.build()]
             warnings += spec.warnings
@@ -1119,8 +1338,12 @@ def generate_types_and_resources(
         elif isinstance(example, dict):
             data_type = types.from_example(example, schema, data_name)
             block = types.blocks.get(data_type, "")
-            if block.startswith("class ") and "workspace_id:" not in block:
-                types.blocks[data_type] = block + "\n    workspace_id: Optional[int]"
+            if block.startswith("class "):
+                # A common field takes its own type even when the example shows it (`37` is not `None`).
+                for key, (type_text, _) in PENDING_COMMON_EVENT_DATA.items():
+                    line = re.compile(rf"^    {key}: .*$", re.M)
+                    block = line.sub(f"    {key}: {type_text}", block) if line.search(block) else f"{block}\n    {key}: {type_text}"
+                types.blocks[data_type] = block
         elif schema:
             data_type = types.render(schema, data_name, quote=False)
         else:
@@ -1211,7 +1434,7 @@ def generate_types_and_resources(
         *[f"        self.{r['attribute']} = {r['class']}(client)" for r in resources],
         "",
     ]
-    return "\n".join(types_lines), "\n".join(resources_lines), warnings
+    return "\n".join(types_lines), "\n".join(resources_lines), warnings, left_out
 
 
 # ---- Main ------------------------------------------------------------------------------------------
@@ -1240,38 +1463,65 @@ def main(argv: List[str]) -> int:
     manifest = json.loads(RESOURCES_FILE.read_text("utf-8"))
     merged, report = merge_pending(spec, pending)
     events = collect_events(merged)
+    groups, group_warnings, catalog = portal_groups(spec)
+    rows = route_rows(merged, groups)
+    group_list = group_rows(rows, groups)
 
-    types_py, resources_py, warnings = generate_types_and_resources(merged, manifest, events, spec_hash)
+    types_py, resources_py, warnings, left_out = generate_types_and_resources(merged, manifest, events, spec_hash)
     files = {
-        "_routes.py": generate_routes(merged, events, spec_hash),
+        "_routes.py": generate_routes(rows, group_list, events, spec_hash),
         "types.py": types_py,
         "resources.py": resources_py,
     }
     assert_permission_names(files)
+    readme = README_FILE.read_text("utf-8")
+    new_readme = generate_readme(readme, readme_block(group_list, len(rows), len(events), catalog))
 
+    print(f"spec: {len(rows)} operations, {len(events)} webhook events, {len(group_list)} groups.")
+    categories = list(dict.fromkeys(g["category"] for g in group_list if g["category"]))
+    if categories:
+        without = [g["name"] for g in group_list if not g["category"]]
+        sizes = {c: sum(1 for g in group_list if g["category"] == c) for c in categories}
+        counts = ", ".join(f"{c} ({n} group{'' if n == 1 else 's'})" for c, n in sizes.items())
+        print(f"categories: {counts}{'; without one: ' + ', '.join(without) if without else ''}.")
+    else:
+        print("categories: the spec does not give the category of its groups yet.")
+    for warning in group_warnings:
+        print(f"warning: {warning}", file=sys.stderr)
     print(f"pending of the spec: {len(report['applied'])} entries applied.")
     if report["superseded"]:
         print(f"the spec already has {len(report['superseded'])} entries of spec/pending.json; they can be deleted from it (in funnelchat-node):")
         for label in report["superseded"]:
             print(f"  - {label}")
+    if report["unpublished"]:
+        print(f"{len(report['unpublished'])} events of spec/pending.json are not published by the spec, so they were not added; they can be deleted from it (in funnelchat-node):")
+        for label in report["unpublished"]:
+            print(f"  - {label}")
     if report["missing"]:
         print(f"warning: {len(report['missing'])} patches did not find their operation in the spec:", file=sys.stderr)
         for label in report["missing"]:
+            print(f"  - {label}", file=sys.stderr)
+    if left_out:
+        print(f"warning: the spec no longer publishes the operation of {len(left_out)} methods of spec/resources.json, so they were left out of the SDK; delete them from it:", file=sys.stderr)
+        for label in left_out:
             print(f"  - {label}", file=sys.stderr)
     for warning in warnings:
         print(f"note: {warning}")
 
     if args.check:
-        stale = [name for name, content in files.items() if not (PACKAGE / name).exists() or (PACKAGE / name).read_text("utf-8") != content]
+        stale = [f"src/funnelchat/{name}" for name, content in files.items() if not (PACKAGE / name).exists() or (PACKAGE / name).read_text("utf-8") != content]
+        if new_readme != readme:
+            stale.append("README.md (generated block)")
         if stale:
-            print(f"src/funnelchat is out of date ({', '.join(stale)}): run `python scripts/generate.py`.", file=sys.stderr)
+            print(f"out of date: {', '.join(stale)}. Run `python scripts/generate.py`.", file=sys.stderr)
             return 1
-        print("src/funnelchat is up to date.")
+        print("src/funnelchat and the generated block of README.md are up to date.")
         return 0
 
     for name, content in files.items():
         (PACKAGE / name).write_text(content, "utf-8")
-    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files))
+    README_FILE.write_text(new_readme, "utf-8")
+    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files) + " and the generated block of README.md")
     return 0
 
 

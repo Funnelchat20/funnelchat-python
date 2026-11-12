@@ -1,10 +1,13 @@
 """The stable `error` codes of the API (`APIError.code`), with their HTTP status.
 
 Decide by `status` and `code`, never by `message`: its text and language change by area. The same
-tables as funnelchat-node 0.3.2 (src/core/error-codes.ts, feat/seguir-un-grupo @ f913feb), which
-cites the production code each one was read in (platform-gate v0.9.1, api-edge 975d815,
-conversations v1.19.7, accounts v1.5.97, communities v2.35.5 and v2.35.7). The spec does not
-enumerate most of them yet; when it does, these tables can be generated.
+tables as funnelchat-node 0.4.0 (src/core/error-codes.ts). Sources, all in production on
+04-11-2026: the key gate as accounts v1.5.97 runs it; the API entry as deployed to production on
+25-10-2026; conversations v1.19.7 (the send rules and the checks before sending a form); accounts
+v1.5.97 (creating and connecting numbers); communities v2.35.5 and v2.35.7 (the rejections of a
+group action). The spec the portal publishes (portal v0.6.13) documents some of these codes in the
+operations that answer them, but not those of the API entry and the key gate. When it documents all
+of them, these tables can be generated.
 """
 
 from __future__ import annotations
@@ -109,9 +112,9 @@ IDEMPOTENCY_ERROR_CODES: Dict[str, int] = {
     "operation_in_progress": 409,  # the first call with that key is still running
 }
 
-#: Rejections of bringing a number's templates from Meta (`templates.sync()`), as the spec of
-#: `POST /api/v1/devices/{device}/templates` enumerates them (developers-portal 51c0aeb, conversations
-#: 519651f1b). A number that does not exist, or is of another workspace, is a `404` without a code.
+#: Rejections of bringing a number's templates from Meta (`templates.sync()`), as the spec the portal
+#: publishes (portal v0.6.13) enumerates them for `POST /api/v1/devices/{device}/templates`. A number
+#: that does not exist, or is of another workspace, is a `404` without a code.
 TEMPLATE_SYNC_ERROR_CODES: Dict[str, int] = {
     "template_sync_in_progress": 409,  # one is already running for that number: do not start another
     "number_not_connected_to_meta": 422,  # a QR number, or one without a WhatsApp Business account or credentials
