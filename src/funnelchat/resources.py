@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 38ae497ab7e6089b…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 a7b480743848dabc…) + spec/pending.json + spec/resources.json.
 
 The resources of the client: one class per piece of the API, from spec/resources.json.
 """
@@ -19,7 +19,6 @@ if TYPE_CHECKING:
         ActionGroupResource,
         ApiGroupActionAcceptedResource,
         ChannelMetadataResource,
-        CommunitiesMessageResource,
         ConnectLinkResource,
         ConnectLinksCreateResponse,
         ConnectLinksGetResponse,
@@ -31,6 +30,7 @@ if TYPE_CHECKING:
         ContactsAttachCustomFieldResponseItem,
         ContactsAttachCustomFieldResponseItemVariant2,
         ContactsAttachCustomFieldResponseItemVariant3,
+        ContactsAttachCustomFieldResponseItemVariant4,
         ContactsDeleteBodyCustomFieldFiltersItem,
         ContactsDeleteBodyTagFiltersItem,
         ContactsDetachCustomFieldBodyItem,
@@ -47,18 +47,16 @@ if TYPE_CHECKING:
         ConversationsCountUnreadResponseVariant2,
         ConversationsMarkAllReadResponse,
         ConversationsMarkAllUnreadResponse,
-        ConversationsMessageResource,
         CustomFieldResource,
         DeviceConnectionEventResource,
         DeviceHealthDetailResource,
         DeviceResource,
         DevicesCreateResponse,
-        DevicesMeResponse,
         DevicesQrResponse,
         FormsAddNumberResponse,
         FormsCreateResponse,
-        FormsCreateVersionResponse,
         FormsDefinitionResponse,
+        FormsDefinitionResponseVariant2,
         FormsMetricsResponse,
         FormsNumbersResponse,
         FormsPublishResponse,
@@ -76,6 +74,7 @@ if TYPE_CHECKING:
         GroupResource,
         GroupsFollowResponse,
         GroupsRetrieveActionResponse,
+        MessageResource,
         MessagesForwardResponseItem,
         MessagesSendContactCardResponse,
         MessagesSendDirectResponse,
@@ -83,21 +82,21 @@ if TYPE_CHECKING:
         MessagesSendResponse,
         ParticipantEventResource,
         ParticipantResource,
-        PendingForm,
-        PendingWebhookSubscriptionWithSecret,
         PublicMessageResource,
+        SaveWhatsappFormRequestDefinition2,
         ScheduledMessageResource,
         SendMessageRequestLinkPreviewMeta2,
         SendMessageRequestOptionsItem2,
+        StoreContactRequestCustomFieldsItem2,
         StoreMessageTemplateRequestButtonsItem2,
         StoreWebhookSubscriptionRequestFilters2,
         TagResource,
         TemplateResource,
-        TemplatesQuickReplyButtonsResponse,
         TemplatesSendBodyTemplateVariables,
         TemplatesSendResponse,
         TemplatesSyncResponse,
         UpdateMessageTemplateRequestButtonsItem2,
+        UpdateOrCreateContactRequestCustomFieldsItem2,
         UpdateWebhookSubscriptionRequestFilters2,
         WebhookSubscriptionCreatedResource,
         WebhookSubscriptionDeliveryResource,
@@ -105,6 +104,7 @@ if TYPE_CHECKING:
         WebhooksEventsResponse,
         WebhooksListResponseVariant2,
         WebhooksTestResponse,
+        WhatsappFormResource,
     )
 
 __all__ = [
@@ -152,6 +152,7 @@ class Contacts(Resource):
         custom_field_numeric_value: float | NotGiven = NOT_GIVEN,
         only_with_phone: str | NotGiven = NOT_GIVEN,
         only_with_mac: str | NotGiven = NOT_GIVEN,
+        only_paused: str | NotGiven = NOT_GIVEN,
         scopeToAdvisor: str | NotGiven = NOT_GIVEN,
         lead_score_categories: Literal["insufficient_data", "hot", "warm", "cold"] | NotGiven = NOT_GIVEN,
         lead_score_min: int | NotGiven = NOT_GIVEN,
@@ -195,6 +196,7 @@ class Contacts(Resource):
                 "custom_field_numeric_value": custom_field_numeric_value,
                 "only_with_phone": only_with_phone,
                 "only_with_mac": only_with_mac,
+                "only_paused": only_paused,
                 "scopeToAdvisor": scopeToAdvisor,
                 "lead_score_categories": lead_score_categories,
                 "lead_score_min": lead_score_min,
@@ -221,6 +223,7 @@ class Contacts(Resource):
         email: Optional[str] | NotGiven = NOT_GIVEN,
         image: Optional[str] | NotGiven = NOT_GIVEN,
         deviceId: Optional[int] | NotGiven = NOT_GIVEN,
+        custom_fields: List[StoreContactRequestCustomFieldsItem2] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -240,6 +243,7 @@ class Contacts(Resource):
                 "email": email,
                 "image": image,
                 "deviceId": deviceId,
+                "custom_fields": custom_fields,
             },
             extra_body=extra_body,
             extra_headers=extra_headers,
@@ -253,6 +257,7 @@ class Contacts(Resource):
         phone: str,
         name: Optional[str] | NotGiven = NOT_GIVEN,
         email: Optional[str] | NotGiven = NOT_GIVEN,
+        custom_fields: List[UpdateOrCreateContactRequestCustomFieldsItem2] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -266,7 +271,7 @@ class Contacts(Resource):
         return cast("ContactResource", self._request(
             "POST",
             "/api/v1/contacts/update-or-create",
-            body={"phone": phone, "name": name, "email": email},
+            body={"phone": phone, "name": name, "email": email, "custom_fields": custom_fields},
             extra_body=extra_body,
             extra_headers=extra_headers,
             timeout=timeout,
@@ -370,13 +375,13 @@ class Contacts(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`POST /api/v1/contacts/delete`: deletes the contacts of the body (`contactIds`, or a
         filter).
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "POST",
             "/api/v1/contacts/delete",
             body={
@@ -461,12 +466,12 @@ class Contacts(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3]]:
+    ) -> List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3, ContactsAttachCustomFieldResponseItemVariant4]]:
         """`POST /api/v1/contacts/attach-custom-field`: sets a custom field on contacts.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3]]", self._request(
+        return cast("List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3, ContactsAttachCustomFieldResponseItemVariant4]]", self._request(
             "POST",
             "/api/v1/contacts/attach-custom-field",
             body=body,
@@ -627,7 +632,8 @@ class Contacts(Resource):
 
 
 class Conversations(Resource):
-    """Conversations (conversations area): the inbox, its counters and the state of each conversation.
+    """Conversations (conversations area): the inbox, its counters, and marking everything as read or
+    unread.
     """
 
     def list(
@@ -711,51 +717,6 @@ class Conversations(Resource):
             timeout=timeout,
             max_retries=max_retries,
         )
-
-    def update(
-        self,
-        contact: int,
-        /,
-        *,
-        favorite: bool | NotGiven = NOT_GIVEN,
-        active_conversation: bool | NotGiven = NOT_GIVEN,
-        unread_messages: int | NotGiven = NOT_GIVEN,
-        adviser_id: Optional[int] | NotGiven = NOT_GIVEN,
-        device_id: int | NotGiven = NOT_GIVEN,
-        text: str | NotGiven = NOT_GIVEN,
-        notes: Optional[str] | NotGiven = NOT_GIVEN,
-        custom_fields: List[str] | NotGiven = NOT_GIVEN,
-        manually_unread: bool | NotGiven = NOT_GIVEN,
-        extra_body: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
-        """`PUT /api/v1/contacts/{contact}/update`: changes the conversation with a contact (open,
-        assigned…).
-
-        Permission: **Contacts and conversations → Edit**.
-        """
-        return cast("Dict[str, Any]", self._request(
-            "PUT",
-            "/api/v1/contacts/{contact}/update",
-            path_params={"contact": contact},
-            body={
-                "favorite": favorite,
-                "active_conversation": active_conversation,
-                "unread_messages": unread_messages,
-                "adviser_id": adviser_id,
-                "device_id": device_id,
-                "text": text,
-                "notes": notes,
-                "custom_fields": custom_fields,
-                "manually_unread": manually_unread,
-            },
-            extra_body=extra_body,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        ))
 
     def count_unread(
         self,
@@ -1155,7 +1116,7 @@ class Messages(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Page[ConversationsMessageResource]:
+    ) -> Page[MessageResource]:
         """`GET /api/v1/contacts/{contactId}/messages`, paginated by cursor: the history of a contact.
 
         Permission: **Contacts and conversations → View**.
@@ -1248,12 +1209,12 @@ class Messages(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`PUT /api/v1/contacts/{contact}/messages/{message}/reaction`: reacts with an emoji.
 
         Permission: **Contacts and conversations → Send**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "PUT",
             "/api/v1/contacts/{contact}/messages/{message}/reaction",
             path_params={"contact": contact, "message": message},
@@ -1274,12 +1235,12 @@ class Messages(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`DELETE /api/v1/contacts/{contact}/messages/{message}/reaction`: removes your reaction.
 
         Permission: **Contacts and conversations → Send**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "DELETE",
             "/api/v1/contacts/{contact}/messages/{message}/reaction",
             path_params={"contact": contact, "message": message},
@@ -1488,30 +1449,6 @@ class Templates(Resource):
             max_retries=max_retries,
         ))
 
-    def quick_reply_buttons(
-        self,
-        template: int,
-        /,
-        *,
-        extra_query: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> TemplatesQuickReplyButtonsResponse:
-        """`GET /api/v1/templates/{template}/quick-reply-buttons`.
-
-        Permission: **Contacts and conversations → View**.
-        """
-        return cast("TemplatesQuickReplyButtonsResponse", self._request(
-            "GET",
-            "/api/v1/templates/{template}/quick-reply-buttons",
-            path_params={"template": template},
-            extra_query=extra_query,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        ))
-
     def send(
         self,
         device: int,
@@ -1596,16 +1533,16 @@ class Forms(Resource):
     def list(
         self,
         *,
-        q: str | NotGiven = NOT_GIVEN,
-        status: Literal["draft", "published", "deprecated"] | NotGiven = NOT_GIVEN,
-        device_id: int | NotGiven = NOT_GIVEN,
+        q: Optional[str] | NotGiven = NOT_GIVEN,
+        status: Optional[Literal["draft", "published", "deprecated"]] | NotGiven = NOT_GIVEN,
+        device_id: Optional[int] | NotGiven = NOT_GIVEN,
+        page: Optional[int] | NotGiven = NOT_GIVEN,
         perPage: int | NotGiven = NOT_GIVEN,
-        page: int | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Page[PendingForm]:
+    ) -> Page[WhatsappFormResource]:
         """`GET /api/v1/forms`, paginated: one row per form, with its current version.
 
         Permission: **Contacts and conversations → View**.
@@ -1616,8 +1553,8 @@ class Forms(Resource):
                 "q": q,
                 "status": status,
                 "device_id": device_id,
-                "perPage": perPage,
                 "page": page,
+                "perPage": perPage,
             },
             extra_query=extra_query,
             extra_headers=extra_headers,
@@ -1650,8 +1587,8 @@ class Forms(Resource):
         self,
         *,
         device_id: int,
+        template_key: str,
         device_ids: List[int] | NotGiven = NOT_GIVEN,
-        template_key: str | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -1701,7 +1638,7 @@ class Forms(Resource):
         id: int,
         /,
         *,
-        definition: Dict[str, Any],
+        definition: SaveWhatsappFormRequestDefinition2,
         name: str | NotGiven = NOT_GIVEN,
         expected_updated_at: Optional[str] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
@@ -1738,12 +1675,12 @@ class Forms(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> None:
+    ) -> List[Any]:
         """`DELETE /api/v1/forms/{id}`: deletes a draft (a published form is deprecated, not deleted).
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("None", self._request(
+        return cast("List[Any]", self._request(
             "DELETE",
             "/api/v1/forms/{id}",
             path_params={"id": id},
@@ -1761,13 +1698,13 @@ class Forms(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> FormsCreateVersionResponse:
+    ) -> str:
         """`POST /api/v1/forms/{id}/versions`: a new draft from this version, or the draft that already
         existed (`created` false).
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("FormsCreateVersionResponse", self._request(
+        return cast("str", self._request(
             "POST",
             "/api/v1/forms/{id}/versions",
             path_params={"id": id},
@@ -1927,13 +1864,13 @@ class Forms(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> FormsDefinitionResponse:
+    ) -> Union[FormsDefinitionResponse, FormsDefinitionResponseVariant2]:
         """`GET /api/v1/forms/families/{familyId}/definition`: the published definition of a form, or
         `data` `None`.
 
         Permission: **Contacts and conversations → View**.
         """
-        return cast("FormsDefinitionResponse", self._request(
+        return cast("Union[FormsDefinitionResponse, FormsDefinitionResponseVariant2]", self._request(
             "GET",
             "/api/v1/forms/families/{familyId}/definition",
             path_params={"familyId": family_id},
@@ -1948,6 +1885,7 @@ class Forms(Resource):
         family_id: int,
         /,
         *,
+        perPage: int | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -1961,6 +1899,7 @@ class Forms(Resource):
             "GET",
             "/api/v1/forms/families/{familyId}/versions",
             path_params={"familyId": family_id},
+            query={"perPage": perPage},
             extra_query=extra_query,
             extra_headers=extra_headers,
             timeout=timeout,
@@ -1972,13 +1911,16 @@ class Forms(Resource):
         family_id: int,
         /,
         *,
-        from_: str | NotGiven = NOT_GIVEN,
-        to: str | NotGiven = NOT_GIVEN,
-        version_id: int | NotGiven = NOT_GIVEN,
-        origin: str | NotGiven = NOT_GIVEN,
-        status: str | NotGiven = NOT_GIVEN,
-        search: str | NotGiven = NOT_GIVEN,
-        page: int | NotGiven = NOT_GIVEN,
+        from_: Optional[str] | NotGiven = NOT_GIVEN,
+        to: Optional[str] | NotGiven = NOT_GIVEN,
+        version_id: Optional[int] | NotGiven = NOT_GIVEN,
+        origin: Optional[str] | NotGiven = NOT_GIVEN,
+        status: Optional[str] | NotGiven = NOT_GIVEN,
+        kind: Optional[str] | NotGiven = NOT_GIVEN,
+        effect_status: Optional[str] | NotGiven = NOT_GIVEN,
+        search: Optional[str] | NotGiven = NOT_GIVEN,
+        page: Optional[int] | NotGiven = NOT_GIVEN,
+        perPage: int | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -1998,8 +1940,11 @@ class Forms(Resource):
                 "version_id": version_id,
                 "origin": origin,
                 "status": status,
+                "kind": kind,
+                "effect_status": effect_status,
                 "search": search,
                 "page": page,
+                "perPage": perPage,
             },
             extra_query=extra_query,
             extra_headers=extra_headers,
@@ -2037,9 +1982,16 @@ class Forms(Resource):
         family_id: int,
         /,
         *,
-        from_: str | NotGiven = NOT_GIVEN,
-        to: str | NotGiven = NOT_GIVEN,
-        version_id: int | NotGiven = NOT_GIVEN,
+        from_: Optional[str] | NotGiven = NOT_GIVEN,
+        to: Optional[str] | NotGiven = NOT_GIVEN,
+        version_id: Optional[int] | NotGiven = NOT_GIVEN,
+        origin: Optional[str] | NotGiven = NOT_GIVEN,
+        status: Optional[str] | NotGiven = NOT_GIVEN,
+        kind: Optional[str] | NotGiven = NOT_GIVEN,
+        effect_status: Optional[str] | NotGiven = NOT_GIVEN,
+        search: Optional[str] | NotGiven = NOT_GIVEN,
+        per_page: Optional[int] | NotGiven = NOT_GIVEN,
+        page: Optional[int] | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -2054,7 +2006,18 @@ class Forms(Resource):
             "GET",
             "/api/v1/forms/families/{familyId}/metrics",
             path_params={"familyId": family_id},
-            query={"from": from_, "to": to, "version_id": version_id},
+            query={
+                "from": from_,
+                "to": to,
+                "version_id": version_id,
+                "origin": origin,
+                "status": status,
+                "kind": kind,
+                "effect_status": effect_status,
+                "search": search,
+                "per_page": per_page,
+                "page": page,
+            },
             extra_query=extra_query,
             extra_headers=extra_headers,
             timeout=timeout,
@@ -2241,7 +2204,7 @@ class CustomFields(Resource):
         *,
         name: str | NotGiven = NOT_GIVEN,
         description: str | NotGiven = NOT_GIVEN,
-        type: int | NotGiven = NOT_GIVEN,
+        type: Literal[0, 1, 2, 3, 4] | NotGiven = NOT_GIVEN,
         withContactCount: bool | NotGiven = NOT_GIVEN,
         perPage: int | NotGiven = NOT_GIVEN,
         orderBy: Literal["name", "created_at", "updated_at"] | NotGiven = NOT_GIVEN,
@@ -2276,7 +2239,7 @@ class CustomFields(Resource):
         self,
         *,
         name: str,
-        type: int,
+        type: Literal[0, 1, 2, 3, 4],
         description: Optional[str] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -2376,8 +2339,8 @@ class Groups(Resource):
     """WhatsApp groups (communities area): the groups of a number, live from WhatsApp
     (`list_by_device()`); following one (`follow()`), so its joins and leaves arrive as events;
     sending a message to a group (`send_message()`) and reading how it went (`retrieve_action()`);
-    and the groups already in the account, with their participants, joins and leaves, messages,
-    scheduled messages and actions.
+    and the groups already in the account, with their participants, joins and leaves, scheduled
+    messages and actions.
 
     Reading needs **Groups and campaigns → View**, sending **Groups and campaigns → Send** and
     following **Groups and campaigns → Manage groups**. Who joins and who leaves a followed group
@@ -2583,29 +2546,6 @@ class Groups(Resource):
                 "groups_uids": groups_uids,
                 "participant_filter": participant_filter,
             },
-            extra_query=extra_query,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        )
-
-    def list_messages(
-        self,
-        group: str,
-        /,
-        *,
-        extra_query: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> Page[CommunitiesMessageResource]:
-        """`GET /api/v1/groups/{group}/messages`, paginated.
-
-        Permission: **Groups and campaigns → View**.
-        """
-        return self._paginate(
-            "/api/v1/groups/{group}/messages",
-            path_params={"group": group},
             extra_query=extra_query,
             extra_headers=extra_headers,
             timeout=timeout,
@@ -2892,6 +2832,9 @@ class Devices(Resource):
         Irreversible. Sends `device.deleted`.
 
         Permission: **WhatsApp numbers → Create, connect and delete**.
+
+        It cannot be undone: a script or an AI agent acting on its own should ask a person to
+        confirm before calling it.
         """
         return cast("str", self._request(
             "DELETE",
@@ -3022,56 +2965,6 @@ class Devices(Resource):
             "GET",
             "/api/v1/devices/{device}/health",
             path_params={"device": device},
-            extra_query=extra_query,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        ))
-
-    def me(
-        self,
-        device: int,
-        /,
-        *,
-        extra_query: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> Optional[DevicesMeResponse]:
-        """`GET /api/v1/devices/{device}/me`: the WhatsApp profile of the number.
-
-        Permission: **WhatsApp numbers → View**.
-        """
-        return cast("Optional[DevicesMeResponse]", self._request(
-            "GET",
-            "/api/v1/devices/{device}/me",
-            path_params={"device": device},
-            extra_query=extra_query,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        ))
-
-    def check_phone(
-        self,
-        device: int,
-        /,
-        *,
-        phone: str,
-        extra_query: Optional[Dict[str, Any]] = None,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> None:
-        """`GET /api/v1/devices/{device}/check-phone`: whether a phone has WhatsApp.
-
-        Permission: **WhatsApp numbers → View**.
-        """
-        return cast("None", self._request(
-            "GET",
-            "/api/v1/devices/{device}/check-phone",
-            path_params={"device": device},
-            query={"phone": phone},
             extra_query=extra_query,
             extra_headers=extra_headers,
             timeout=timeout,
@@ -3246,7 +3139,8 @@ class Webhooks(Resource, WebhookHelpers):
     Reading needs **Notifications (webhooks) → View** and the rest **Notifications (webhooks) →
     Manage**. A key only sees and manages subscriptions to events of the areas it can read
     (**Contacts and conversations → View**, **Groups and campaigns → View**, **WhatsApp numbers →
-    View**): asking for others is a `422` on `events`.
+    View**): asking for others is a `422` on `events`. Rotating the secret is not open to API keys:
+    it is done from the panel.
     """
 
     def events(
@@ -3296,7 +3190,7 @@ class Webhooks(Resource, WebhookHelpers):
         self,
         *,
         url: str,
-        events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.plan_blocked", "billing.upcoming_charge", "subscription.expiring", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "ai_quota.low_balance", "ai_quota.topup_succeeded", "ai_quota.topup_failed", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]],
+        events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]],
         description: Optional[str] | NotGiven = NOT_GIVEN,
         filters: StoreWebhookSubscriptionRequestFilters2 | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
@@ -3348,7 +3242,7 @@ class Webhooks(Resource, WebhookHelpers):
         /,
         *,
         url: str,
-        events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.plan_blocked", "billing.upcoming_charge", "subscription.expiring", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "ai_quota.low_balance", "ai_quota.topup_succeeded", "ai_quota.topup_failed", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]],
+        events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]],
         description: Optional[str] | NotGiven = NOT_GIVEN,
         filters: UpdateWebhookSubscriptionRequestFilters2 | NotGiven = NOT_GIVEN,
         status: Literal["active", "paused"] | NotGiven = NOT_GIVEN,
@@ -3398,29 +3292,6 @@ class Webhooks(Resource, WebhookHelpers):
             "/api/v1/webhooks/{id}",
             path_params={"id": id},
             extra_query=extra_query,
-            extra_headers=extra_headers,
-            timeout=timeout,
-            max_retries=max_retries,
-        ))
-
-    def rotate_secret(
-        self,
-        id: str,
-        /,
-        *,
-        extra_headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        max_retries: Optional[int] = None,
-    ) -> PendingWebhookSubscriptionWithSecret:
-        """`POST /api/v1/webhooks/{id}/rotate-secret`: the new secret comes once; the old one stops
-        working. Not open to API keys (`403 route_not_available`): rotate it from the panel.
-
-        Permission: **Notifications (webhooks) → Manage**.
-        """
-        return cast("PendingWebhookSubscriptionWithSecret", self._request(
-            "POST",
-            "/api/v1/webhooks/{id}/rotate-secret",
-            path_params={"id": id},
             extra_headers=extra_headers,
             timeout=timeout,
             max_retries=max_retries,

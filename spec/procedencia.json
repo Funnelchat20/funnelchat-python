@@ -1,76 +1,71 @@
 {
   "description": "Where spec/funnelchat.json and spec/pending.json came from. Written by `python scripts/generate.py --spec <file>` and `--pending <file>`; do not edit it by hand.",
   "file": "spec/funnelchat.json",
-  "sha256": "38ae497ab7e6089b31b589e1f93c2289524348d581796eba109568885642813c",
-  "bytes": 1228756,
+  "sha256": "a7b480743848dabccbea2a1f2314263ca070316eeed97aab4a6f09f171c80e5a",
+  "bytes": 738025,
   "source": {
-    "repository": "git@github.com:Funnelchat20/developers-portal.git",
-    "path": "generated/specs/funnelchat-completa.json",
-    "branch": "feat/plantillas-de-meta",
-    "commit": "51c0aeb9d132667582e0f2e53158a17adeb09d44",
-    "commit_date": "2026-11-06T09:42:14-03:00",
-    "file_tracked_in_git": false,
+    "url": "https://developers-portal.funnelchat.app/specs/funnelchat.json",
+    "portal_version": "v0.6.13",
+    "repository": null,
+    "path": null,
+    "branch": null,
+    "commit": null,
+    "commit_date": null,
+    "file_tracked_in_git": null,
     "tracked_files_clean": null,
-    "file_modified_at": "2026-11-06T12:43:27.930Z",
+    "file_modified_at": "2026-11-12T00:47:01.809Z",
     "declared": [
-      "repository",
-      "path",
-      "branch",
-      "commit",
-      "commit_date",
-      "file_tracked_in_git"
+      "url",
+      "portal_version"
     ],
     "declared_note": "The fields in `declared` were given on the command line (`--source`), not read from git: the file was imported from outside a checkout of its repository."
   },
-  "imported_at": "2026-11-06T12:46:05.091Z",
+  "imported_at": "2026-11-12T12:26:14.184Z",
   "spec": {
     "openapi": "3.1.0",
     "title": "Funnelchat API",
     "version": "v0",
-    "paths": 219,
-    "operations": 266,
-    "webhooks": 29,
+    "paths": 209,
+    "operations": 253,
+    "webhooks": 57,
     "domains": [
       {
         "domain": "conversations",
-        "sha": "519651f1b",
-        "branch": "feat/sincronizar-plantillas",
-        "snapshot_at": "2026-11-06T09:35:46-03:00",
-        "declared": true
+        "sha": null,
+        "branch": null,
+        "snapshot_at": null
       },
       {
         "domain": "communities",
-        "sha": "54643bbd",
-        "branch": "feat/grupos-sin-panel",
-        "snapshot_at": "2026-11-05T15:39:12-03:00",
-        "declared": true
+        "sha": null,
+        "branch": null,
+        "snapshot_at": null
       },
       {
         "domain": "accounts",
-        "sha": "558332bcf",
-        "branch": "snapshot/v1.5.97",
-        "snapshot_at": "2026-11-04T16:58:11-03:00",
-        "declared": true
+        "sha": null,
+        "branch": null,
+        "snapshot_at": null
       }
     ]
   },
   "pending": {
     "file": "spec/pending.json",
-    "sha256": "051680bd82944c0e248d20d1499d89e61a231c6ba3ef6a5d864cf18a97aae1ad",
-    "bytes": 112110,
+    "sha256": "39662e350155b12b96099a495993f3d243e9098e575a65c914432f224b1c002e",
+    "bytes": 67589,
     "note": "The pending layer is kept in funnelchat-node (spec/pending.json) and copied here unchanged, so both SDKs apply the same corrections. `file_commit` is the last commit that changed it.",
     "source": {
       "repository": "git@github.com:Funnelchat20/funnelchat-node.git",
       "path": "spec/pending.json",
-      "branch": "feat/seguir-un-grupo",
-      "commit": "f913feb076deea31d0c94e4f8511aee43e03f121",
-      "commit_date": "2026-11-05T16:47:39-03:00",
+      "branch": "feat/todas-las-funciones",
+      "commit": "bde867919d1da0fc9412bad7e67688c3cd2e6a9b",
+      "commit_date": "2026-11-12T00:01:44-03:00",
       "file_tracked_in_git": true,
       "tracked_files_clean": true,
-      "file_modified_at": "2026-11-05T17:01:15.771Z",
-      "file_commit": "a8f83509d4a40d6116a9c0487bf0aee639948273",
+      "file_modified_at": "2026-11-12T02:30:56.482Z",
+      "file_commit": "bde867919d1da0fc9412bad7e67688c3cd2e6a9b",
       "file_clean": true
     },
-    "imported_at": "2026-11-05T22:48:37.754Z"
+    "imported_at": "2026-11-12T12:26:07.423Z"
   }
 }

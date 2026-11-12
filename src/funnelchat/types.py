@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 38ae497ab7e6089b…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 a7b480743848dabc…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
@@ -18,15 +18,12 @@ __all__ = [
     "ActionGroupResource",
     "ActionGroupResource2",
     "ActionGroupResourceVariant2",
-    "AiQuotaLowBalanceEvent",
-    "AiQuotaTopupFailedEvent",
-    "AiQuotaTopupSucceededEvent",
+    "AddFormNumberRequest",
     "ApiGroupActionAcceptedResource",
     "ApiGroupDeviceRequest",
     "ApiGroupImportResource",
     "BillingPaymentFailedEvent",
     "BillingPaymentFailedEventData",
-    "BillingPlanBlockedEvent",
     "BillingUpcomingChargeEvent",
     "BillingUpcomingChargeEventData",
     "BroadcastFinishedEvent",
@@ -43,7 +40,6 @@ __all__ = [
     "CampaignStatusChangedEventData",
     "CampaignStatusChangedEventDataCampaign",
     "ChannelMetadataResource",
-    "CommunitiesMessageResource",
     "ConnectLinkResource",
     "ConnectLinksCreateResponse",
     "ConnectLinksGetResponse",
@@ -70,10 +66,15 @@ __all__ = [
     "ContactTagRemovedEventDataContact",
     "ContactTagRemovedEventDataTag",
     "ContactTagResource",
+    "ContactUpdatedEvent",
+    "ContactUpdatedEventData",
+    "ContactUpdatedEventDataContact",
+    "ContactUpdatedEventDataCustomFieldsItem",
     "ContactsAttachCustomFieldBodyItem",
     "ContactsAttachCustomFieldResponseItem",
     "ContactsAttachCustomFieldResponseItemVariant2",
     "ContactsAttachCustomFieldResponseItemVariant3",
+    "ContactsAttachCustomFieldResponseItemVariant4",
     "ContactsDeleteBodyCustomFieldFiltersItem",
     "ContactsDeleteBodyTagFiltersItem",
     "ContactsDetachCustomFieldBodyItem",
@@ -97,10 +98,7 @@ __all__ = [
     "ConversationsCountUnreadResponseVariant2",
     "ConversationsMarkAllReadResponse",
     "ConversationsMarkAllUnreadResponse",
-    "ConversationsMessageResource",
-    "ConversationsMessageResourceAiAssistant",
     "CustomFieldResource",
-    "CustomFieldTypeEnum",
     "DailyReportGeneratedEvent",
     "DailyReportGeneratedEventData",
     "DailyReportGeneratedEventDataPeriod",
@@ -128,7 +126,6 @@ __all__ = [
     "DeviceResourceCapabilitiesGroups",
     "DeviceResourceCapabilitiesMessages",
     "DevicesCreateResponse",
-    "DevicesMeResponse",
     "DevicesQrResponse",
     "FlowCompletedEvent",
     "FlowCompletedEventData",
@@ -140,23 +137,36 @@ __all__ = [
     "FlowFailedEventDataFlow",
     "FormsAddNumberResponse",
     "FormsCreateResponse",
-    "FormsCreateVersionResponse",
     "FormsDefinitionResponse",
     "FormsDefinitionResponseData",
+    "FormsDefinitionResponseDataDefinitionVariant2",
+    "FormsDefinitionResponseVariant2",
     "FormsMetricsResponse",
+    "FormsMetricsResponseData",
+    "FormsMetricsResponseDataNotSentReasonsItem",
+    "FormsMetricsResponseDataNotSentReasonsItemVariant2",
     "FormsNumbersResponse",
     "FormsPublishResponse",
     "FormsRemoveNumberResponse",
     "FormsRetrieveResponse",
     "FormsRetrieveResponseResponse",
-    "FormsRetrieveResponseVersionsItem",
+    "FormsRetrieveResponseResponseData",
+    "FormsRetrieveResponseResponseDataAnswersItem",
+    "FormsRetrieveResponseResponseDataContact",
+    "FormsRetrieveResponseResponseDataEffectsItemVariant2",
+    "FormsRetrieveResponseResponseDataStatus",
+    "FormsRetrieveResponseResponseDataStatusVariant2",
+    "FormsRetrieveResponseResponseDataStatusVariant3",
+    "FormsRetrieveResponseResponseDataStatusVariant4",
     "FormsRetryNumbersResponse",
     "FormsSyncResponse",
     "FormsTemplatesResponse",
-    "FormsTemplatesResponseDataItem",
     "FormsUpdateResponse",
     "FormsVersionsResponse",
     "FormsVersionsResponseDataItem",
+    "FormsVersionsResponseLinks",
+    "FormsVersionsResponseMeta",
+    "FormsVersionsResponseMetaLinksItem",
     "ForwardMessageRequest",
     "ForwardMessageRequestTargetsItem",
     "ForwardMessageRequestTargetsItem2",
@@ -237,12 +247,16 @@ __all__ = [
     "MacUsage80Event",
     "MacUsage80EventData",
     "MessageOriginEnum",
+    "MessageReactionFailedEvent",
+    "MessageReactionFailedEventData",
     "MessageReceivedEvent",
     "MessageReceivedEventData",
     "MessageReceivedEventDataContact",
     "MessageReceivedEventDataMessage",
     "MessageReceivedEventDataMessageMedia",
     "MessageReceivedEventDataReceiver",
+    "MessageResource",
+    "MessageResourceAiAssistant",
     "MessageStatusChangedEvent",
     "MessageStatusChangedEventData",
     "MessageStatusChangedEventDataError",
@@ -261,9 +275,6 @@ __all__ = [
     "PendingDeviceConnection",
     "PendingDeviceQr",
     "PendingExternalReference",
-    "PendingForm",
-    "PendingFormLintIssue",
-    "PendingFormNumber",
     "PendingGroupAction",
     "PendingGroupActionGroup",
     "PendingGroupActionResult",
@@ -271,8 +282,6 @@ __all__ = [
     "PendingGroupActionResultMessage",
     "PendingGroupParticipantResult",
     "PendingWebhookDevice",
-    "PendingWebhookSubscriptionFilters",
-    "PendingWebhookSubscriptionWithSecret",
     "PipelineFinishedEvent",
     "PipelineFinishedEventData",
     "PipelineFinishedEventDataActions",
@@ -285,6 +294,15 @@ __all__ = [
     "PollVotedEventDataPoll",
     "PollVotedEventDataScheduledMessage",
     "PublicMessageResource",
+    "SaveWhatsappFormRequest",
+    "SaveWhatsappFormRequestDefinition",
+    "SaveWhatsappFormRequestDefinition2",
+    "SaveWhatsappFormRequestDefinition2ScreensItem",
+    "SaveWhatsappFormRequestDefinition2ScreensItemItemsItem",
+    "SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem",
+    "SaveWhatsappFormRequestDefinitionScreensItem",
+    "SaveWhatsappFormRequestDefinitionScreensItemItemsItem",
+    "SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem",
     "ScheduledMessageFinishedEvent",
     "ScheduledMessageFinishedEventData",
     "ScheduledMessageFinishedEventDataGroups",
@@ -312,6 +330,8 @@ __all__ = [
     "StoreContactCardRequest",
     "StoreContactNoteRequest",
     "StoreContactRequest",
+    "StoreContactRequestCustomFieldsItem",
+    "StoreContactRequestCustomFieldsItem2",
     "StoreDeviceRequest",
     "StoreMessageReactionRequest",
     "StoreMessageTemplateRequest",
@@ -320,11 +340,11 @@ __all__ = [
     "StoreWebhookSubscriptionRequest",
     "StoreWebhookSubscriptionRequestFilters",
     "StoreWebhookSubscriptionRequestFilters2",
+    "StoreWhatsappFormRequest",
     "SubscriptionCancellationConfirmedEvent",
     "SubscriptionCancellationConfirmedEventData",
     "SubscriptionDormantEndingEvent",
     "SubscriptionDormantEndingEventData",
-    "SubscriptionExpiringEvent",
     "SubscriptionReactivatedEvent",
     "SubscriptionReactivatedEventData",
     "SubscriptionTrialEndingEvent",
@@ -334,7 +354,6 @@ __all__ = [
     "TemplateStatusChangedEvent",
     "TemplateStatusChangedEventData",
     "TemplateStatusChangedEventDataTemplate",
-    "TemplatesQuickReplyButtonsResponse",
     "TemplatesSendBodyTemplateVariables",
     "TemplatesSendResponse",
     "TemplatesSyncResponse",
@@ -342,6 +361,9 @@ __all__ = [
     "UpdateMessageTemplateRequest",
     "UpdateMessageTemplateRequestButtonsItem",
     "UpdateMessageTemplateRequestButtonsItem2",
+    "UpdateOrCreateContactRequest",
+    "UpdateOrCreateContactRequestCustomFieldsItem",
+    "UpdateOrCreateContactRequestCustomFieldsItem2",
     "UpdateWebhookSubscriptionRequest",
     "UpdateWebhookSubscriptionRequestFilters",
     "UpdateWebhookSubscriptionRequestFilters2",
@@ -360,10 +382,13 @@ __all__ = [
     "WebhooksListResponseVariant2MetaLinksItem",
     "WebhooksTestResponse",
     "WhatsAppProviderEnum",
+    "WhatsappForm",
     "WhatsappFormCompletedEvent",
     "WhatsappFormCompletedEventData",
     "WhatsappFormCompletedEventDataAnswersItem",
     "WhatsappFormCompletedEventDataForm",
+    "WhatsappFormResource",
+    "WhatsappFormTemplate",
 ]
 
 
@@ -373,7 +398,7 @@ class ContactsListQueryTagFiltersItem(TypedDict):
 
 
 class ContactsListQueryCustomFieldFiltersItem(TypedDict):
-    type: Literal["0", "1", "2", "3", "4"]
+    type: Literal[0, 1, 2, 3, 4]
     mode: NotRequired[Optional[Literal["all", "any", "exclude"]]]
     value: NotRequired[Optional[str]]
     date_from: NotRequired[Optional[str]]
@@ -406,11 +431,10 @@ class ContactResource(TypedDict):
     device_id: Optional[int]
     adviser_id: Optional[int]
     paused_at: Optional[str]
+    paused_by: NotRequired[Any]
     mac_date: Optional[str]
     is_mac_inactive: NotRequired[bool]
     ai_assistant_name: Optional[str]
-    ai_assistant_email: NotRequired[str]
-    account_main_email: NotRequired[str]
     stage_since: NotRequired[str]
     is_stagnant: NotRequired[bool]
     follow_up_date: NotRequired[Optional[str]]
@@ -422,7 +446,7 @@ class ContactCustomFieldResource(TypedDict):
     id: int
     name: str
     description: str
-    type: str
+    type: Literal[0, 1, 2, 3, 4]
     value: str
     created_at: str
     updated_at: str
@@ -456,6 +480,34 @@ class StoreContactRequest(TypedDict, total=False):
     email: Optional[str]
     image: Optional[str]
     deviceId: Optional[int]
+    custom_fields: List[StoreContactRequestCustomFieldsItem]
+
+
+class StoreContactRequestCustomFieldsItem(TypedDict):
+    id: int
+    value: str
+
+
+class StoreContactRequestCustomFieldsItem2(TypedDict):
+    id: int
+    value: str
+
+
+class UpdateOrCreateContactRequest(TypedDict):
+    phone: str
+    name: NotRequired[Optional[str]]
+    email: NotRequired[Optional[str]]
+    custom_fields: NotRequired[List[UpdateOrCreateContactRequestCustomFieldsItem]]
+
+
+class UpdateOrCreateContactRequestCustomFieldsItem(TypedDict):
+    id: int
+    value: str
+
+
+class UpdateOrCreateContactRequestCustomFieldsItem2(TypedDict):
+    id: int
+    value: str
 
 
 class UpdateContactRequest(TypedDict, total=False):
@@ -519,6 +571,11 @@ class ContactsAttachCustomFieldResponseItemVariant2(TypedDict):
 
 
 class ContactsAttachCustomFieldResponseItemVariant3(TypedDict):
+    message: Optional[str]
+    status: Literal[422]
+
+
+class ContactsAttachCustomFieldResponseItemVariant4(TypedDict):
     message: Literal["Custom field value attached successfully."]
     status: Literal[201]
 
@@ -691,7 +748,7 @@ class MessagesSendFormResponse(TypedDict):
     message: PublicMessageResource
 
 
-class ConversationsMessageResource(TypedDict):
+class MessageResource(TypedDict):
     chat_id: str
     contact_id: Union[int, Literal[""]]
     content: Union[List[Any], Dict[str, Any], str]
@@ -726,13 +783,11 @@ class ConversationsMessageResource(TypedDict):
     file_original_name: Optional[str]
     client_reference: Optional[str]
     scheduled: NotRequired[bool]
-    ai_assistant: NotRequired[ConversationsMessageResourceAiAssistant]
+    ai_assistant: NotRequired[MessageResourceAiAssistant]
 
 
-class ConversationsMessageResourceAiAssistant(TypedDict):
+class MessageResourceAiAssistant(TypedDict):
     name: str
-    email: str
-    account_main_email: str
 
 
 class StoreContactCardRequest(TypedDict):
@@ -859,10 +914,6 @@ class UpdateMessageTemplateRequestButtonsItem2(TypedDict, total=False):
     phone_number: str
 
 
-class TemplatesQuickReplyButtonsResponse(TypedDict):
-    data: List[Any]
-
-
 class TemplatesSendBodyTemplateVariables(TypedDict, total=False):
     body: List[Optional[str]]
 
@@ -871,137 +922,229 @@ class TemplatesSendResponse(TypedDict):
     message: PublicMessageResource
 
 
-class PendingForm(TypedDict):
+class WhatsappFormResource(TypedDict):
     id: int
     family_id: int
     name: str
     label: str
-    category: NotRequired[Optional[str]]
-    status: Literal["draft", "published", "deprecated"]
+    category: str
+    status: str
     version: int
-    definition: NotRequired[Any]
-    fields: NotRequired[Any]
-    mapping: NotRequired[Any]
-    tag_rules: NotRequired[Any]
-    has_endpoint: NotRequired[bool]
-    first_screen: NotRequired[Optional[str]]
-    first_screen_dynamic: NotRequired[Optional[bool]]
-    lint_errors_count: NotRequired[Optional[int]]
+    definition: NotRequired[List[Any]]
+    fields: NotRequired[Optional[List[Any]]]
+    mapping: NotRequired[Optional[List[Any]]]
+    tag_rules: NotRequired[Optional[List[Any]]]
+    has_endpoint: bool
+    first_screen: Optional[str]
+    first_screen_dynamic: bool
+    lint_errors_count: int
     draft_id: NotRequired[int]
     draft_version: NotRequired[int]
     sends: NotRequired[int]
     responses: NotRequired[int]
-    meta_flow_id: NotRequired[Optional[str]]
-    flow_json: NotRequired[Any]
-    validation_errors: NotRequired[Any]
-    published_at: NotRequired[Optional[str]]
-    updated_at: NotRequired[Optional[str]]
+    meta_flow_id: Optional[str]
+    flow_json: NotRequired[Optional[List[Any]]]
+    validation_errors: NotRequired[Optional[List[Any]]]
+    published_at: Optional[str]
+    updated_at: Optional[str]
 
 
 class FormsTemplatesResponse(TypedDict):
-    data: List[FormsTemplatesResponseDataItem]
+    data: List[WhatsappFormTemplate]
 
 
-class FormsTemplatesResponseDataItem(TypedDict):
+class WhatsappFormTemplate(TypedDict):
+    id: int
     key: str
     title: str
-    description: NotRequired[Optional[str]]
-    category: NotRequired[Optional[str]]
+    description: str
+    category: str
+    definition: List[Any]
+    sort: int
+    created_at: Optional[str]
+    updated_at: Optional[str]
+
+
+class StoreWhatsappFormRequest(TypedDict):
+    device_id: int
+    device_ids: NotRequired[List[int]]
+    template_key: str
 
 
 class FormsCreateResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-    numbers: NotRequired[List[PendingFormNumber]]
-
-
-class PendingFormLintIssue(TypedDict):
-    code: str
-    severity: str
-    screenId: NotRequired[Optional[str]]
-    itemId: NotRequired[Optional[str]]
-    message: str
-
-
-class PendingFormNumber(TypedDict):
-    device_id: Optional[int]
-    primary: bool
-    status: Literal["draft", "publishing", "published", "failed"]
-    error: Optional[str]
+    data: WhatsappFormResource
+    lint: List[Any]
+    numbers: List[Any]
 
 
 class FormsRetrieveResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-    versions: NotRequired[List[FormsRetrieveResponseVersionsItem]]
-    numbers: NotRequired[List[PendingFormNumber]]
+    data: WhatsappFormResource
+    lint: List[Any]
+    versions: List[WhatsappForm]
+    numbers: List[Any]
 
 
-class FormsRetrieveResponseVersionsItem(TypedDict, total=False):
+class WhatsappForm(TypedDict):
     id: int
-    version: int
+    user_id: int
+    workspace_id: Optional[int]
+    phone_number_id: str
+    family_id: int
+    name: str
+    category: str
     status: str
+    version: int
+    parent_flow_id: Optional[int]
+    definition: List[Any]
+    flow_json: Optional[List[Any]]
+    flow_json_hash: Optional[str]
+    fields: Optional[List[Any]]
+    mapping: Optional[List[Any]]
+    tag_rules: Optional[List[Any]]
+    has_endpoint: bool
+    first_screen: Optional[str]
+    first_screen_dynamic: bool
+    meta_flow_id: Optional[str]
+    validation_errors: Optional[List[Any]]
+    lint_errors_count: int
+    retained_reason: Optional[str]
     published_at: Optional[str]
+    deprecated_at: Optional[str]
+    created_at: Optional[str]
+    updated_at: Optional[str]
+    deleted_at: Optional[str]
+    actor_user_id: Optional[int]
+
+
+class SaveWhatsappFormRequest(TypedDict):
+    name: NotRequired[str]
+    definition: SaveWhatsappFormRequestDefinition
+    expected_updated_at: NotRequired[Optional[str]]
+
+
+class SaveWhatsappFormRequestDefinition(TypedDict):
+    screens: List[SaveWhatsappFormRequestDefinitionScreensItem]
+
+
+class SaveWhatsappFormRequestDefinitionScreensItem(TypedDict):
+    id: str
+    title: NotRequired[Optional[str]]
+    cta: NotRequired[Optional[str]]
+    next: NotRequired[Optional[str]]
+    routes: NotRequired[Optional[Dict[str, Any]]]
+    items: NotRequired[List[SaveWhatsappFormRequestDefinitionScreensItemItemsItem]]
+
+
+class SaveWhatsappFormRequestDefinitionScreensItemItemsItem(TypedDict):
+    type: str
+    name: NotRequired[str]
+    id: NotRequired[Optional[str]]
+    label: NotRequired[Optional[str]]
+    url: NotRequired[Optional[str]]
+    src: NotRequired[Optional[str]]
+    options: NotRequired[Optional[List[SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem]]]
+    tagMap: NotRequired[Optional[List[Optional[str]]]]
+
+
+class SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem(TypedDict, total=False):
+    id: Optional[str]
+    title: Optional[str]
+
+
+class SaveWhatsappFormRequestDefinition2(TypedDict):
+    screens: List[SaveWhatsappFormRequestDefinition2ScreensItem]
+
+
+class SaveWhatsappFormRequestDefinition2ScreensItem(TypedDict):
+    id: str
+    title: NotRequired[Optional[str]]
+    cta: NotRequired[Optional[str]]
+    next: NotRequired[Optional[str]]
+    routes: NotRequired[Optional[Dict[str, Any]]]
+    items: NotRequired[List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItem]]
+
+
+class SaveWhatsappFormRequestDefinition2ScreensItemItemsItem(TypedDict):
+    type: str
+    name: NotRequired[str]
+    id: NotRequired[Optional[str]]
+    label: NotRequired[Optional[str]]
+    url: NotRequired[Optional[str]]
+    src: NotRequired[Optional[str]]
+    options: NotRequired[Optional[List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem]]]
+    tagMap: NotRequired[Optional[List[Optional[str]]]]
+
+
+class SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem(TypedDict, total=False):
+    id: Optional[str]
+    title: Optional[str]
 
 
 class FormsUpdateResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-
-
-class FormsCreateVersionResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-    created: NotRequired[bool]
-    numbers: NotRequired[List[PendingFormNumber]]
+    data: WhatsappFormResource
+    lint: List[Any]
 
 
 class FormsSyncResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-    numbers: NotRequired[List[PendingFormNumber]]
+    data: WhatsappFormResource
+    lint: List[Any]
+    numbers: List[Any]
 
 
 class FormsPublishResponse(TypedDict):
-    data: PendingForm
-    lint: NotRequired[List[PendingFormLintIssue]]
-    numbers: NotRequired[List[PendingFormNumber]]
+    data: WhatsappFormResource
+    lint: List[Any]
+    numbers: List[Any]
 
 
 class FormsNumbersResponse(TypedDict):
-    numbers: List[PendingFormNumber]
+    numbers: List[Any]
+
+
+class AddFormNumberRequest(TypedDict):
+    device_id: int
 
 
 class FormsAddNumberResponse(TypedDict):
-    numbers: List[PendingFormNumber]
+    numbers: List[Any]
 
 
 class FormsRemoveNumberResponse(TypedDict):
-    numbers: List[PendingFormNumber]
+    numbers: List[Any]
 
 
 class FormsRetryNumbersResponse(TypedDict):
-    numbers: List[PendingFormNumber]
+    numbers: List[Any]
 
 
 class FormsDefinitionResponse(TypedDict):
-    data: Optional[FormsDefinitionResponseData]
+    data: FormsDefinitionResponseData
 
 
-class FormsDefinitionResponseData(TypedDict, total=False):
+class FormsDefinitionResponseData(TypedDict):
     family_id: int
     form_id: int
     name: str
     status: str
     version: int
-    definition: Any
+    definition: Union[List[Any], FormsDefinitionResponseDataDefinitionVariant2]
+
+
+class FormsDefinitionResponseDataDefinitionVariant2(TypedDict):
+    screens: List[str]
+
+
+class FormsDefinitionResponseVariant2(TypedDict):
+    data: None
 
 
 class FormsVersionsResponse(TypedDict):
     data: List[FormsVersionsResponseDataItem]
+    links: FormsVersionsResponseLinks
+    meta: FormsVersionsResponseMeta
 
 
-class FormsVersionsResponseDataItem(TypedDict, total=False):
+class FormsVersionsResponseDataItem(TypedDict):
     id: int
     version: int
     name: str
@@ -1012,15 +1155,135 @@ class FormsVersionsResponseDataItem(TypedDict, total=False):
     meta_flow_id: Optional[str]
     retained_reason: Optional[str]
     responses: int
-    templates: Any
+    templates: int
+
+
+class FormsVersionsResponseLinks(TypedDict):
+    first: Optional[str]
+    last: Optional[str]
+    prev: Optional[str]
+    next: Optional[str]
+
+
+FormsVersionsResponseMeta = TypedDict("FormsVersionsResponseMeta", {"current_page": int, "from": Optional[int], "last_page": int, "links": List["FormsVersionsResponseMetaLinksItem"], "path": str, "per_page": int, "to": Optional[int], "total": int}, total=True)
+
+
+class FormsVersionsResponseMetaLinksItem(TypedDict):
+    url: Optional[str]
+    label: str
+    active: bool
 
 
 class FormsRetrieveResponseResponse(TypedDict):
-    data: Any
+    data: FormsRetrieveResponseResponseData
+
+
+class FormsRetrieveResponseResponseData(TypedDict):
+    id: int
+    flow_token: str
+    contact: FormsRetrieveResponseResponseDataContact
+    status: Union[FormsRetrieveResponseResponseDataStatus, FormsRetrieveResponseResponseDataStatusVariant2, FormsRetrieveResponseResponseDataStatusVariant3, FormsRetrieveResponseResponseDataStatusVariant4]
+    origin: str
+    node_id: Optional[str]
+    automation_run_id: Optional[int]
+    conversation_id: Optional[int]
+    version: int
+    version_id: int
+    output_id: Optional[str]
+    output_label: Optional[str]
+    reason: Optional[str]
+    reason_label: Optional[str]
+    completed_after_expiry: bool
+    partial: str
+    last_screen_id: Optional[str]
+    sent_at: Optional[str]
+    delivered_at: Optional[str]
+    read_at: Optional[str]
+    responded_at: Optional[str]
+    expires_at: Optional[str]
+    answers: List[FormsRetrieveResponseResponseDataAnswersItem]
+    effects: List[Union[List[Any], FormsRetrieveResponseResponseDataEffectsItemVariant2]]
+    response_json: Optional[List[Any]]
+
+
+class FormsRetrieveResponseResponseDataContact(TypedDict):
+    id: int
+    name: Optional[str]
+    phone: Optional[str]
+
+
+class FormsRetrieveResponseResponseDataStatus(TypedDict):
+    key: Literal["completed"]
+    label: Literal["Completado"]
+
+
+class FormsRetrieveResponseResponseDataStatusVariant2(TypedDict):
+    key: Literal["pending"]
+    label: Literal["Esperando respuesta"]
+
+
+class FormsRetrieveResponseResponseDataStatusVariant3(TypedDict):
+    key: Literal["unfinished"]
+    label: Literal["Sin completar"]
+
+
+class FormsRetrieveResponseResponseDataStatusVariant4(TypedDict):
+    key: Literal["not_sent"]
+    label: Literal["No enviado"]
+
+
+class FormsRetrieveResponseResponseDataAnswersItem(TypedDict):
+    name: str
+    label: str
+    value: str
+    unknown: bool
+
+
+class FormsRetrieveResponseResponseDataEffectsItemVariant2(TypedDict):
+    id: int
+    run_id: int
+    kind: str
+    kind_label: str
+    status: str
+    attempts: int
+    max_attempts: int
+    next_attempt_at: Optional[str]
+    payload: List[Any]
+    request_excerpt: Optional[str]
+    response_excerpt: Optional[str]
+    created_at: Optional[str]
 
 
 class FormsMetricsResponse(TypedDict):
-    data: Any
+    data: FormsMetricsResponseData
+
+
+class FormsMetricsResponseData(TypedDict):
+    not_sent: int
+    not_sent_reasons: List[Union[FormsMetricsResponseDataNotSentReasonsItem, FormsMetricsResponseDataNotSentReasonsItemVariant2]]
+    sent: int
+    delivered: int
+    read: int
+    completed: int
+    pending: int
+    unfinished: int
+    partial: int
+    completion_rate: Optional[float]
+    delivery_rate: Optional[float]
+    read_rate: Optional[float]
+    median_seconds_to_complete: Optional[int]
+
+
+class FormsMetricsResponseDataNotSentReasonsItem(TypedDict):
+    reason: str
+    label: str
+    count: int
+
+
+class FormsMetricsResponseDataNotSentReasonsItemVariant2(TypedDict):
+    reason: Literal["desconocido"]
+    label: Literal["sin motivo registrado"]
+    count: int
 
 
 class TagResource(TypedDict):
@@ -1036,7 +1299,7 @@ class TagResource(TypedDict):
 class CustomFieldResource(TypedDict):
     id: int
     name: str
-    type: CustomFieldTypeEnum
+    type: Literal[0, 1, 2, 3, 4]
     description: Optional[str]
     contact_count: NotRequired[int]
     created_at: Optional[str]
@@ -1065,8 +1328,6 @@ class GroupResource(TypedDict):
     order: str
     participants_numbers: str
     participants_count: str
-    read_rate: Optional[int]
-    read_rate_messages_count: int
     status: str
     uid: str
     updatedAt: str
@@ -1136,16 +1397,9 @@ class ParticipantEventResource(TypedDict):
     country_name: str
 
 
-class CommunitiesMessageResource(TypedDict):
-    id: str
-    uid: str
-    type: str
-    value: Any
-    scheduledMessage: ScheduledMessageResource
-
-
 class ScheduledMessageResource(TypedDict):
     id: str
+    uuid: str
     name: str
     send_at: str
     status: str
@@ -1391,15 +1645,6 @@ class DeviceHealthDetailResourceHistoryItem(TypedDict):
     occurred_at: str
 
 
-class DevicesMeResponse(TypedDict):
-    phone: str
-    locale: Literal[""]
-    name: str
-    avatar: str
-    isBusiness: bool
-    about: Literal[""]
-
-
 class DeviceConnectionEventResource(TypedDict):
     id: int
     phone: Optional[str]
@@ -1498,7 +1743,7 @@ class WebhooksListResponseVariant2MetaLinksItem(TypedDict):
 class StoreWebhookSubscriptionRequest(TypedDict):
     url: str
     description: NotRequired[Optional[str]]
-    events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.plan_blocked", "billing.upcoming_charge", "subscription.expiring", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "ai_quota.low_balance", "ai_quota.topup_succeeded", "ai_quota.topup_failed", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
+    events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
     filters: NotRequired[StoreWebhookSubscriptionRequestFilters]
 
 
@@ -1531,7 +1776,7 @@ class WebhookSubscriptionCreatedResource(TypedDict):
 class UpdateWebhookSubscriptionRequest(TypedDict):
     url: str
     description: NotRequired[Optional[str]]
-    events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.plan_blocked", "billing.upcoming_charge", "subscription.expiring", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "ai_quota.low_balance", "ai_quota.topup_succeeded", "ai_quota.topup_failed", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
+    events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
     filters: NotRequired[UpdateWebhookSubscriptionRequestFilters]
     status: NotRequired[Literal["active", "paused"]]
 
@@ -1542,28 +1787,6 @@ class UpdateWebhookSubscriptionRequestFilters(TypedDict, total=False):
 
 class UpdateWebhookSubscriptionRequestFilters2(TypedDict, total=False):
     campaign_ids: Optional[List[str]]
-
-
-class PendingWebhookSubscriptionWithSecret(TypedDict):
-    id: str
-    url: str
-    description: Optional[str]
-    events: List[str]
-    filters: PendingWebhookSubscriptionFilters
-    status: Literal["active", "paused", "disabled"]
-    disabled_reason: Optional[Literal["too_many_failures", "key_revoked"]]
-    last_delivery_at: Optional[str]
-    last_success_at: Optional[str]
-    secret_rotated_at: Optional[str]
-    created_at: Optional[str]
-    updated_at: Optional[str]
-    migration: Optional[Dict[str, Any]]
-    secret: str
-    secret_notice: str
-
-
-class PendingWebhookSubscriptionFilters(TypedDict, total=False):
-    campaign_ids: List[str]
 
 
 class WebhooksTestResponse(TypedDict):
@@ -1602,30 +1825,6 @@ class AccountBlockedEvent(TypedDict):
     data: AccountBlockedEventData
 
 
-class AiQuotaLowBalanceEvent(TypedDict):
-    id: str
-    type: Literal["ai_quota.low_balance"]
-    version: int
-    occurred_at: str
-    data: Dict[str, Any]
-
-
-class AiQuotaTopupFailedEvent(TypedDict):
-    id: str
-    type: Literal["ai_quota.topup_failed"]
-    version: int
-    occurred_at: str
-    data: Dict[str, Any]
-
-
-class AiQuotaTopupSucceededEvent(TypedDict):
-    id: str
-    type: Literal["ai_quota.topup_succeeded"]
-    version: int
-    occurred_at: str
-    data: Dict[str, Any]
-
-
 class BillingPaymentFailedEventData(TypedDict):
     amount_cents: int
     currency: str
@@ -1638,14 +1837,6 @@ class BillingPaymentFailedEvent(TypedDict):
     version: int
     occurred_at: str
     data: BillingPaymentFailedEventData
-
-
-class BillingPlanBlockedEvent(TypedDict):
-    id: str
-    type: Literal["billing.plan_blocked"]
-    version: int
-    occurred_at: str
-    data: Dict[str, Any]
 
 
 class BillingUpcomingChargeEventData(TypedDict):
@@ -1857,6 +2048,34 @@ class ContactTagRemovedEvent(TypedDict):
     version: int
     occurred_at: str
     data: ContactTagRemovedEventData
+
+
+class ContactUpdatedEventData(TypedDict):
+    contact: ContactUpdatedEventDataContact
+    changed: List[str]
+    custom_fields: List[ContactUpdatedEventDataCustomFieldsItem]
+    workspace_id: Optional[int]
+
+
+class ContactUpdatedEventDataContact(TypedDict):
+    id: int
+    name: str
+    phone: str
+    email: str
+
+
+class ContactUpdatedEventDataCustomFieldsItem(TypedDict):
+    id: int
+    name: str
+    value: str
+
+
+class ContactUpdatedEvent(TypedDict):
+    id: str
+    type: Literal["contact.updated"]
+    version: int
+    occurred_at: str
+    data: ContactUpdatedEventData
 
 
 class ConversationAssignedEventData(TypedDict):
@@ -2561,6 +2780,25 @@ class MacUsage80Event(TypedDict):
     data: MacUsage80EventData
 
 
+class MessageReactionFailedEventData(TypedDict):
+    message_id: int
+    contact_id: int
+    device_id: int
+    emoji: str
+    reason: str
+    requested_at: str
+    occurred_at: str
+    workspace_id: Optional[int]
+
+
+class MessageReactionFailedEvent(TypedDict):
+    id: str
+    type: Literal["message.reaction_failed"]
+    version: int
+    occurred_at: str
+    data: MessageReactionFailedEventData
+
+
 class MessageReceivedEventData(TypedDict):
     message: MessageReceivedEventDataMessage
     contact: MessageReceivedEventDataContact
@@ -2810,14 +3048,6 @@ class SubscriptionDormantEndingEvent(TypedDict):
     data: SubscriptionDormantEndingEventData
 
 
-class SubscriptionExpiringEvent(TypedDict):
-    id: str
-    type: Literal["subscription.expiring"]
-    version: int
-    occurred_at: str
-    data: Dict[str, Any]
-
-
 class SubscriptionReactivatedEventData(TypedDict):
     renews_at: str
     workspace_id: Optional[int]
@@ -2926,9 +3156,6 @@ MessageTemplateTypeEnum = Literal["text", "image", "document", "video", "locatio
 MessageTemplateStatusEnum = Literal["PENDING", "APPROVED", "REJECTED", "PENDING_DELETION", "PAUSED", "DISABLED", "ARCHIVED"]
 
 
-CustomFieldTypeEnum = Literal[0, 1, 2, 3, 4]
-
-
 ActionGroupResource = Union["ActionGroupResource2", "ActionGroupResourceVariant2"]
 
 
@@ -2947,11 +3174,7 @@ PendingExternalReference = Optional[str]
 #: Every webhook event type the spec knows.
 WebhookEventType = Literal[
     "account.blocked",
-    "ai_quota.low_balance",
-    "ai_quota.topup_failed",
-    "ai_quota.topup_succeeded",
     "billing.payment_failed",
-    "billing.plan_blocked",
     "billing.upcoming_charge",
     "broadcast.finished",
     "broadcast.paused",
@@ -2961,6 +3184,7 @@ WebhookEventType = Literal[
     "contact.stage_changed",
     "contact.tag_added",
     "contact.tag_removed",
+    "contact.updated",
     "conversation.assigned",
     "conversation.closed",
     "daily_report.generated",
@@ -2990,6 +3214,7 @@ WebhookEventType = Literal[
     "mac.expiring",
     "mac.usage_100",
     "mac.usage_80",
+    "message.reaction_failed",
     "message.received",
     "message.status_changed",
     "pipeline.finished",
@@ -2999,7 +3224,6 @@ WebhookEventType = Literal[
     "scheduled_message.response_received",
     "subscription.cancellation_confirmed",
     "subscription.dormant_ending",
-    "subscription.expiring",
     "subscription.reactivated",
     "subscription.trial_ending",
     "template.status_changed",
@@ -3011,11 +3235,7 @@ WebhookEventType = Literal[
 #: knows them: answer 2xx to the ones you do not handle.
 WebhookEvent = Union[
     "AccountBlockedEvent",
-    "AiQuotaLowBalanceEvent",
-    "AiQuotaTopupFailedEvent",
-    "AiQuotaTopupSucceededEvent",
     "BillingPaymentFailedEvent",
-    "BillingPlanBlockedEvent",
     "BillingUpcomingChargeEvent",
     "BroadcastFinishedEvent",
     "BroadcastPausedEvent",
@@ -3025,6 +3245,7 @@ WebhookEvent = Union[
     "ContactStageChangedEvent",
     "ContactTagAddedEvent",
     "ContactTagRemovedEvent",
+    "ContactUpdatedEvent",
     "ConversationAssignedEvent",
     "ConversationClosedEvent",
     "DailyReportGeneratedEvent",
@@ -3054,6 +3275,7 @@ WebhookEvent = Union[
     "MacExpiringEvent",
     "MacUsage100Event",
     "MacUsage80Event",
+    "MessageReactionFailedEvent",
     "MessageReceivedEvent",
     "MessageStatusChangedEvent",
     "PipelineFinishedEvent",
@@ -3063,7 +3285,6 @@ WebhookEvent = Union[
     "ScheduledMessageResponseReceivedEvent",
     "SubscriptionCancellationConfirmedEvent",
     "SubscriptionDormantEndingEvent",
-    "SubscriptionExpiringEvent",
     "SubscriptionReactivatedEvent",
     "SubscriptionTrialEndingEvent",
     "TemplateStatusChangedEvent",
