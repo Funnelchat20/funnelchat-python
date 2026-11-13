@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import pickle
 import time
 from typing import Any, Callable, Dict, List
 
@@ -133,6 +134,26 @@ def test_error_mapping() -> None:
     client = make_client(lambda request: (_ for _ in ()).throw(httpx.ConnectError("refused", request=request)), calls, max_retries=0)
     with pytest.raises(funnelchat.APIConnectionError):
         client.devices.list()
+
+
+def test_errors_survive_pickle() -> None:
+    # Celery, multiprocessing and joblib pickle what a task raises to take it to another process.
+    calls: List[httpx.Request] = []
+    errors: List[funnelchat.FunnelchatError] = []
+    for status in (400, 401, 403, 404, 409, 415, 418, 422, 429, 500):
+        client = make_client(lambda request: reply(status, {"error": "window_closed", "message": "Closed"}, {"Retry-After": "7"}), calls, max_retries=0)
+        with pytest.raises(funnelchat.APIError) as raised:
+            client.contacts.retrieve(2001)
+        errors.append(raised.value)
+    errors += [
+        funnelchat.APIConnectionError(),
+        funnelchat.APIConnectionTimeoutError(2.5),
+        funnelchat.WebhookVerificationError("signature_mismatch", "The signature does not match."),
+    ]
+    for error in errors:
+        copy = pickle.loads(pickle.dumps(error))
+        assert type(copy) is type(error) and copy.args == error.args and str(copy) == str(error)
+        assert vars(copy) == vars(error), type(error).__name__
 
 
 # The signature vectors of the developer portal (`tests/test_firmas.py`), as funnelchat-node's
