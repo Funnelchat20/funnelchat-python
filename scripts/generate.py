@@ -28,7 +28,8 @@ Steps:
      here as is) into the spec. The layer corrects what the spec publishes and never adds to it: an
      operation or an event the spec does not publish is not typed. Every entry applies only while
      the spec still lacks it, or still says what the entry corrects, and the report lists the
-     entries a new spec made obsolete.
+     entries a new spec made obsolete. Then the event fields of PENDING_EVENT_FIELDS, below, by
+     the same rule.
   3. src/funnelchat/_routes.py   every operation (method, path, area, permission, its group and the
                                  category of the group as the portal shows them, whether it cannot
                                  be undone), the portal's groups and the event catalog. The SDK
@@ -406,7 +407,7 @@ def merge_pending(spec: Dict[str, Any], pending: Dict[str, Any]) -> Tuple[Dict[s
             report["superseded"].append(label)
             continue
         del merged["webhooks"][current]
-        merged["webhooks"][event_type] = item
+        merged["webhooks"][event_type] = copy.deepcopy(item)
         report["applied"].append(label)
 
     return merged, report
@@ -691,6 +692,9 @@ class Types:
         if "const" in schema:
             return self.literal([schema["const"]])
         if isinstance(schema.get("enum"), list):
+            if schema.get(OPEN_ENUM) and all(isinstance(v, str) for v in schema["enum"]):
+                # Values the API may add to: the known ones, for the editor, and any other string.
+                return f"Union[{self.literal(schema['enum'])}, str]"
             return self.literal(schema["enum"])
         if "allOf" in schema:
             if len(schema["allOf"]) == 1 and not schema.get("properties"):
@@ -749,7 +753,8 @@ class Types:
         return union(parts) if parts else "None"
 
     # -- events: types inferred from an example, with the schema as a hint
-    def from_example(self, value: Any, hint: Any, context: str) -> str:
+    def from_example(self, value: Any, hint: Any, context: str, extra: Optional[Dict[str, Tuple[str, bool]]] = None) -> str:
+        """`extra`: fields of the top object that take this type even when the example shows them."""
         hint = self.resolve(hint) if isinstance(hint, dict) else None
         if hint and ("enum" in hint or "const" in hint):
             return self.render(hint, context, quote=False)
@@ -779,6 +784,12 @@ class Types:
             for k, prop in hint_props.items():
                 if k not in value:
                     fields.append((k, self.render(prop, name + pascal(k), quote=False), False))
+            for key, (type_text, required) in (extra or {}).items():
+                at = next((i for i, field in enumerate(fields) if field[0] == key), None)
+                if at is None:
+                    fields.append((key, type_text, required))
+                else:
+                    fields[at] = (key, type_text, required)
             self.blocks[name] = self.render_typed_dict(name, fields)
             return name
         return "Any"
@@ -1084,6 +1095,56 @@ def generate_readme(current: str, block: str) -> str:
 # event's schema, it stops being added there.
 PENDING_COMMON_EVENT_DATA = {"workspace_id": ("Optional[int]", True)}
 
+# A schema with this key and an `enum` of strings is typed as its values or any other string: a list
+# the API adds to without a new version. OpenAPI has no way to say it, so only PENDING_EVENT_FIELDS
+# sets it, in the merged spec in memory.
+OPEN_ENUM = "x-fc-open-enum"
+
+# Fields of an event where production sends otherwise than the spec and spec/pending.json say, read in
+# the code that emits it. `at` is a JSON Pointer into the schema of the event's body; each entry
+# replaces the keys of `schema` there only while that schema still matches `while`, and generation
+# lists the entries a new spec or a new pending layer made unnecessary, so they can be deleted.
+PENDING_EVENT_FIELDS: Tuple[Dict[str, Any], ...] = (
+    {
+        # A question without a label sends its name: `label` is never null. `value` can be.
+        "event": "whatsapp_form.completed",
+        "at": "/properties/data/properties/answers/items/properties/label",
+        "while": {"type": ["string", "null"]},
+        "schema": {"type": "string"},
+    },
+    {
+        # WhatsApp brings new kinds of message: one the spec does not list yet arrives as it is.
+        "event": "message.received",
+        "at": "/properties/data/properties/message/properties/type",
+        "while": {"type": "string", OPEN_ENUM: None},
+        "schema": {OPEN_ENUM: True},
+    },
+)
+
+
+def apply_event_fields(merged: Dict[str, Any]) -> Dict[str, List[str]]:
+    """Applies PENDING_EVENT_FIELDS to the events of the merged spec, in place."""
+    report: Dict[str, List[str]] = {"applied": [], "superseded": [], "missing": []}
+    for entry in PENDING_EVENT_FIELDS:
+        label = f"webhook {entry['event']} {entry['at']}"
+        bodies = [
+            pointer(item, "/post/requestBody/content/application~1json/schema")
+            for key, item in merged.get("webhooks", {}).items()
+            if event_type_of_key(key) == entry["event"]
+        ]
+        targets = [target for target in (pointer(body, entry["at"]) for body in bodies if isinstance(body, dict)) if isinstance(target, dict)]
+        if not targets:
+            report["missing"].append(label)
+            continue
+        current = [target for target in targets if matches(target, entry["while"])]
+        if not current:
+            report["superseded"].append(label)
+            continue
+        for target in current:
+            target.update(copy.deepcopy(entry["schema"]))
+        report["applied"].append(label)
+    return report
+
 
 def wrap_doc(text: str, indent: str, width: int = 100) -> List[str]:
     lines: List[str] = []
@@ -1341,14 +1402,8 @@ def generate_types_and_resources(
         if explicit:
             data_type = types.typed_dict(types.claim(data_name, exact=True), schema, claimed=True, extra=PENDING_COMMON_EVENT_DATA)
         elif isinstance(example, dict):
-            data_type = types.from_example(example, schema, data_name)
-            block = types.blocks.get(data_type, "")
-            if block.startswith("class "):
-                # A common field takes its own type even when the example shows it (`37` is not `None`).
-                for key, (type_text, _) in PENDING_COMMON_EVENT_DATA.items():
-                    line = re.compile(rf"^    {key}: .*$", re.M)
-                    block = line.sub(f"    {key}: {type_text}", block) if line.search(block) else f"{block}\n    {key}: {type_text}"
-                types.blocks[data_type] = block
+            # A common field takes its own type even when the example shows it (`37` is not `None`).
+            data_type = types.from_example(example, schema, data_name, extra=PENDING_COMMON_EVENT_DATA)
         elif schema:
             data_type = types.render(schema, data_name, quote=False)
         else:
@@ -1464,6 +1519,7 @@ def main(argv: List[str]) -> int:
     pending = json.loads(pending_bytes.decode("utf-8"))
     manifest = json.loads(RESOURCES_FILE.read_text("utf-8"))
     merged, report = merge_pending(spec, pending)
+    fields_report = apply_event_fields(merged)
     events = collect_events(merged)
     groups, group_warnings, catalog = portal_groups(spec)
     rows = route_rows(merged, groups)
@@ -1502,6 +1558,15 @@ def main(argv: List[str]) -> int:
     if report["missing"]:
         print(f"warning: {len(report['missing'])} patches did not find their operation in the spec:", file=sys.stderr)
         for label in report["missing"]:
+            print(f"  - {label}", file=sys.stderr)
+    print(f"event fields of scripts/generate.py: {len(fields_report['applied'])} entries applied.")
+    if fields_report["superseded"]:
+        print(f"the spec already says {len(fields_report['superseded'])} entries of PENDING_EVENT_FIELDS; they can be deleted from scripts/generate.py:")
+        for label in fields_report["superseded"]:
+            print(f"  - {label}")
+    if fields_report["missing"]:
+        print(f"warning: {len(fields_report['missing'])} entries of PENDING_EVENT_FIELDS did not find their field in the spec:", file=sys.stderr)
+        for label in fields_report["missing"]:
             print(f"  - {label}", file=sys.stderr)
     if left_out:
         print(f"warning: the spec no longer publishes the operation of {len(left_out)} methods of spec/resources.json, so they were left out of the SDK; delete them from it:", file=sys.stderr)

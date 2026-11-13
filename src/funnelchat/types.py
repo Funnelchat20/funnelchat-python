@@ -2003,7 +2003,7 @@ class CampaignNoGroupsAvailableEvent(TypedDict):
     data: CampaignNoGroupsAvailableEventData
 
 
-CampaignStatusChangedEventData = TypedDict("CampaignStatusChangedEventData", {"campaign": "CampaignStatusChangedEventDataCampaign", "from": str, "to": str}, total=True)
+CampaignStatusChangedEventData = TypedDict("CampaignStatusChangedEventData", {"campaign": "CampaignStatusChangedEventDataCampaign", "from": str, "to": str, "workspace_id": Optional[int]}, total=True)
 
 
 class CampaignStatusChangedEventDataCampaign(TypedDict):
@@ -2890,7 +2890,7 @@ class MessageReceivedEventData(TypedDict):
 
 class MessageReceivedEventDataMessage(TypedDict):
     id: int
-    type: Literal["text", "image", "video", "document", "sticker", "contact", "audio", "note", "action", "invalid", "interactive", "location", "voice_call", "video_call", "event", "button", "template", "notification", "option_list", "template_button_reply", "poll", "whatsapp_form", "call_permission_request", "call_permission_reply", "request_contact_info"]
+    type: Union[Literal["text", "image", "video", "document", "sticker", "contact", "audio", "note", "action", "invalid", "interactive", "location", "voice_call", "video_call", "event", "button", "template", "notification", "option_list", "template_button_reply", "poll", "whatsapp_form", "call_permission_request", "call_permission_reply", "request_contact_info"], str]
     text: Optional[str]
     media: Optional[MessageReceivedEventDataMessageMedia]
 
@@ -3213,7 +3213,7 @@ class WhatsappFormCompletedEventDataForm(TypedDict):
 
 class WhatsappFormCompletedEventDataAnswersItem(TypedDict):
     key: str
-    label: Optional[str]
+    label: str
     value: Union[bool, float, str, List[str], None]
 
 

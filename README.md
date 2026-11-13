@@ -384,7 +384,7 @@ The types come from the spec the developer portal publishes (`spec/funnelchat.js
 - what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, and the answers of `webhooks.update` and `groups.retrieve_action`;
 - the `data` of the events the spec shows only by an example, or without one, such as the `device.*` events, `message.received`, `message.status_changed` and the group events (`group.message_received` and `group.reaction_added` carry `message["uid"]`, as production sends them and the published example shows).
 
-The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number.
+The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message.
 
 ### Upgrading from 0.1
 
