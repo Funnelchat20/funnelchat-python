@@ -386,6 +386,13 @@ The types come from the spec the developer portal publishes (`spec/funnelchat.js
 
 The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message.
 
+### Upgrading from 0.4
+
+0.5.0 changes nothing at runtime, but two types of the events change, so a type checker may ask for a change:
+
+- `message["type"]` of `message.received` is one of the types the spec lists or any other `str`: WhatsApp brings new kinds of message before the SDK lists them. Handle one you do not know instead of matching every known type exhaustively.
+- The `label` of each answer of `whatsapp_form.completed` is `str`, never `None`.
+
 ### Upgrading from 0.1
 
 0.4.0 types only what the portal publishes for an API key, and takes the version of the Node and PHP SDKs, which cover the same functions. Routes the portal does not publish are closed to keys in production, so these methods are gone:
