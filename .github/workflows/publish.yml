@@ -1,6 +1,9 @@
 name: Publish to PyPI
 
 # Publishes through PyPI Trusted Publishing (OIDC): no PyPI token is stored in this repo.
+# A tag is published only when its commit is on main and it matches src/funnelchat/_version.py, after
+# the checks of ci.yml pass on every supported Python. A pre-release tag (vX.Y.Z-rc.N, -beta.N,
+# -alpha.N) is published as a PEP 440 pre-release, which pip never installs by default.
 # A manual run (workflow_dispatch) publishes nothing; it only checks that the OIDC exchange with PyPI works.
 
 on:
@@ -10,7 +13,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 concurrency:
@@ -18,31 +20,139 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
+  release-tag:
+    name: Check the tag
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.package.outputs.name }}
+      version: ${{ steps.package.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # The SDK runs on Python 3.9 or later; the release is built and tested on one current version.
+      - name: Check that the tag's commit is on main
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          commit="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$commit" origin/main; then
+            echo "::error::Tag $TAG points to $commit, which is not on main: only a commit of main is published"
+            exit 1
+          fi
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Read the package name and version
+      - name: Check that the tag matches the package version
         id: package
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          python - <<'PY' >> "$GITHUB_OUTPUT"
-          import pathlib, re, tomllib
-          print("name=" + tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["name"])
-          print("version=" + re.search(r'__version__ = "([^"]+)"', pathlib.Path("src/funnelchat/_version.py").read_text()).group(1))
+          python -m pip install --upgrade packaging
+          python - <<'PY'
+          import os, pathlib, re, sys, tomllib
+          from packaging.version import Version
+
+          def fail(message):
+              print(f"::error::{message}")
+              sys.exit(1)
+
+          tag = os.environ["TAG"]
+          name = tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["name"]
+          version = re.search(r'__version__ = "([^"]+)"', pathlib.Path("src/funnelchat/_version.py").read_text()).group(1)
+          shape = re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?", tag)
+          if not shape:
+              fail(f"Tag {tag} is not vX.Y.Z, or vX.Y.Z-rc.N, -beta.N, -alpha.N for a pre-release")
+          if tag != f"v{version}":
+              fail(f"Tag {tag} does not match src/funnelchat/_version.py version {version} (expected v{version})")
+          # A pre-release tag must give a version PyPI and pip take as a pre-release, never the default one.
+          if Version(version).is_prerelease != bool(shape.group(1)):
+              fail(f"Version {version} is {'a' if Version(version).is_prerelease else 'not a'} pre-release, but tag {tag} says otherwise")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"name={name}\nversion={Version(version)}\n")
+          print(f"{name} {Version(version)}{' (pre-release)' if Version(version).is_prerelease else ''} from {tag}")
           PY
+
+  checks:
+    name: Checks
+    needs: release-tag
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish
+    needs: [release-tag, checks]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check whether this version is already on PyPI
+        id: published
+        env:
+          NAME: ${{ needs.release-tag.outputs.name }}
+          VERSION: ${{ needs.release-tag.outputs.version }}
+        run: |
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/$NAME/$VERSION/json")" = "200" ]; then
+            echo "::notice::$NAME $VERSION is already on PyPI; nothing to publish"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build, and check that the files carry the tag's version
+        if: steps.published.outputs.exists != 'true'
+        env:
+          VERSION: ${{ needs.release-tag.outputs.version }}
+        run: |
+          python -m pip install --upgrade build packaging
+          python -m build
+          python - <<'PY'
+          import os, pathlib, sys
+          from packaging.utils import parse_sdist_filename, parse_wheel_filename
+          from packaging.version import Version
+
+          expected = Version(os.environ["VERSION"])
+          for path in sorted(pathlib.Path("dist").iterdir()):
+              parse = parse_wheel_filename if path.suffix == ".whl" else parse_sdist_filename
+              version = parse(path.name)[1]
+              if version != expected or version.is_prerelease != expected.is_prerelease:
+                  print(f"::error::{path.name} carries version {version}, not {expected}")
+                  sys.exit(1)
+              print(f"{path.name}: {version}")
+          PY
+
+      # Uploads dist/ with digital attestations (provenance), through the OIDC exchange.
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.published.outputs.exists != 'true'
+
+  oidc-check:
+    name: Check the OIDC exchange with PyPI
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       # The token PyPI mints here is discarded: it is never printed or stored, and expires in 15 minutes.
       - name: Check the OIDC exchange with PyPI
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          NAME: ${{ steps.package.outputs.name }}
         run: |
+          name="$(python3 -c 'import pathlib, tomllib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["name"])')"
           audience="$(curl -sS https://pypi.org/_/oidc/audience | jq -r '.audience // empty')"
           response="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${audience:-pypi}")"
@@ -57,45 +167,7 @@ jobs:
             -H 'Content-Type: application/json' --data @- https://pypi.org/_/oidc/mint-token)"
           unset id_token
           if [ "${status:0:1}" != "2" ]; then
-            echo "::error::Trusted publishing failed for $NAME: HTTP $status"
+            echo "::error::Trusted publishing failed for $name: HTTP $status"
             exit 1
           fi
-          echo "Trusted publishing OK for $NAME"
-
-      - name: Check that the tag matches the package version
-        if: github.event_name != 'workflow_dispatch'
-        env:
-          TAG: ${{ github.ref_name }}
-          VERSION: ${{ steps.package.outputs.version }}
-        run: |
-          if [ "$TAG" != "v$VERSION" ]; then
-            echo "::error::Tag $TAG does not match src/funnelchat/_version.py version $VERSION (expected v$VERSION)"
-            exit 1
-          fi
-
-      - name: Check whether this version is already on PyPI
-        id: published
-        if: github.event_name != 'workflow_dispatch'
-        env:
-          NAME: ${{ steps.package.outputs.name }}
-          VERSION: ${{ steps.package.outputs.version }}
-        run: |
-          if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/$NAME/$VERSION/json")" = "200" ]; then
-            echo "::notice::$NAME $VERSION is already on PyPI; nothing to publish"
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Check the generated code, test and build
-        if: github.event_name != 'workflow_dispatch' && steps.published.outputs.exists != 'true'
-        run: |
-          python -m pip install --upgrade pip build
-          python -m pip install -e . pytest
-          python scripts/generate.py --check
-          python -m pytest
-          python -m build
-
-      # Uploads dist/ with digital attestations (provenance), through the OIDC exchange.
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        if: github.event_name != 'workflow_dispatch' && steps.published.outputs.exists != 'true'
+          echo "Trusted publishing OK for $name"

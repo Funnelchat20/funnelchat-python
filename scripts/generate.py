@@ -9,7 +9,7 @@
                                                   funnelchat-node, record where it came from in
                                                   spec/procedencia.json, then regenerate
     python scripts/generate.py --check            regenerate in memory and fail if a generated file,
-                                                  or the generated block of README.md, differs
+                                                  or a generated block of README.md, differs
 
 The spec is the one the developer portal publishes (https://developers-portal.funnelchat.app/specs/funnelchat.json):
 every function an API key can use, and nothing closed to keys. The SDK types only what it brings.
@@ -43,10 +43,13 @@ Steps:
                                  from its operation. A method whose operation is no longer in the
                                  spec is left out, and the report says which one.
   6. README.md                   the block between README_START and README_END: how many operations
-                                 and events the SDK covers, and the portal's groups by category.
+                                 and events the SDK covers, and the portal's groups by category; and
+                                 the one between README_IMPORT_START and README_IMPORT_END: the
+                                 commands that import the spec, with the portal's version that
+                                 spec/procedencia.json records.
 
 Regenerating with a new spec never needs anything edited by hand. Nothing in the generated files
-(or in that block of the README) is edited by hand, and they name a permission only as the panel
+(or in those blocks of the README) is edited by hand, and they name a permission only as the panel
 does (**WhatsApp numbers → View**), never by its literal, except in the `permission` of the route
 table: the generation fails if they do.
 """
@@ -1035,7 +1038,7 @@ def generate_routes(rows: List[Dict[str, Any]], group_list: List[Dict[str, Any]]
     return "\n".join(lines)
 
 
-# ---- Step 6: the generated block of the README ------------------------------------------------------
+# ---- Step 6: the generated blocks of the README -----------------------------------------------------
 
 README_START = "<!-- generated:functions — written by scripts/generate.py; do not edit by hand -->"
 README_END = "<!-- /generated:functions -->"
@@ -1076,12 +1079,33 @@ def readme_block(group_list: List[Dict[str, Any]], operations: int, events: int,
     return "\n".join(lines)
 
 
-def generate_readme(current: str, block: str) -> str:
-    """The README with its generated block replaced; fails if the markers are missing."""
-    start, end = current.find(README_START), current.find(README_END)
+README_IMPORT_START = "<!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->"
+README_IMPORT_END = "<!-- /generated:import -->"
+PUBLISHED_SPEC_URL = "https://developers-portal.funnelchat.app/specs/funnelchat.json"
+
+
+def import_block(provenance: Dict[str, Any]) -> str:
+    """The commands that import the spec, with the URL and the portal's version spec/procedencia.json
+    records, so the README never names another version than the one in spec/."""
+    source = provenance.get("source") or {}
+    url = source.get("url") or PUBLISHED_SPEC_URL
+    version = source.get("portal_version") or "<version>"
+    return "\n".join(
+        [
+            "```bash",
+            f"curl -fsSo /tmp/funnelchat.json {url}",
+            f"python scripts/generate.py --spec /tmp/funnelchat.json --source url={url} --source portal_version={version}",
+            "```",
+        ]
+    )
+
+
+def generate_readme(current: str, block: str, start_marker: str = README_START, end_marker: str = README_END) -> str:
+    """The README with a generated block replaced; fails if its markers are missing."""
+    start, end = current.find(start_marker), current.find(end_marker)
     if start == -1 or end == -1 or end < start:
-        raise GenerationError(f"README.md lacks the generated block: put {README_START} and {README_END} where it goes.")
-    return f"{current[: start + len(README_START)]}\n{block}\n{current[end:]}"
+        raise GenerationError(f"README.md lacks a generated block: put {start_marker} and {end_marker} where it goes.")
+    return f"{current[: start + len(start_marker)]}\n{block}\n{current[end:]}"
 
 
 # ---- Steps 4 and 5: types and resources -----------------------------------------------------------
@@ -1534,6 +1558,7 @@ def main(argv: List[str]) -> int:
     assert_permission_names(files)
     readme = README_FILE.read_text("utf-8")
     new_readme = generate_readme(readme, readme_block(group_list, len(rows), len(events), catalog))
+    new_readme = generate_readme(new_readme, import_block(provenance), README_IMPORT_START, README_IMPORT_END)
 
     print(f"spec: {len(rows)} operations, {len(events)} webhook events, {len(group_list)} groups.")
     categories = list(dict.fromkeys(g["category"] for g in group_list if g["category"]))
@@ -1578,17 +1603,17 @@ def main(argv: List[str]) -> int:
     if args.check:
         stale = [f"src/funnelchat/{name}" for name, content in files.items() if not (PACKAGE / name).exists() or (PACKAGE / name).read_text("utf-8") != content]
         if new_readme != readme:
-            stale.append("README.md (generated block)")
+            stale.append("README.md (generated blocks)")
         if stale:
             print(f"out of date: {', '.join(stale)}. Run `python scripts/generate.py`.", file=sys.stderr)
             return 1
-        print("src/funnelchat and the generated block of README.md are up to date.")
+        print("src/funnelchat and the generated blocks of README.md are up to date.")
         return 0
 
     for name, content in files.items():
         (PACKAGE / name).write_text(content, "utf-8")
     README_FILE.write_text(new_readme, "utf-8")
-    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files) + " and the generated block of README.md")
+    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files) + " and the generated blocks of README.md")
     return 0
 
 

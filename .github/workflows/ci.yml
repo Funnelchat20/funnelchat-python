@@ -1,0 +1,48 @@
+name: CI
+
+# The checks of every pull request and every push to main, on each Python the SDK supports. The
+# publish workflow calls it too, so a release passes the same checks before it is published.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # requires-python and the classifiers of pyproject.toml: 3.9, the minimum, to 3.14.
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip build
+          python -m pip install -e . pytest
+
+      - name: Check that the generated files and the README blocks are up to date with spec/
+        run: python scripts/generate.py --check
+
+      - name: Test
+        run: python -m pytest
+
+      - name: Build
+        run: python -m build
