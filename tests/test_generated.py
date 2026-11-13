@@ -78,6 +78,11 @@ def test_every_type_resolves_at_runtime() -> None:
         typing.get_type_hints(cls)
 
 
+def test_names_of_a_published_release_still_import() -> None:
+    for name in generate.RETIRED_TYPES:
+        assert name in types.__all__ and hasattr(types, name), name
+
+
 def test_events_type_what_production_sends() -> None:
     for name in ("GroupJoinRequestCreatedEventDataParticipant", "GroupJoinRequestRevokedEventDataParticipant"):
         participant = typing.get_type_hints(getattr(types, name))

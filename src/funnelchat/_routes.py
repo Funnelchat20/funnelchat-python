@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 3e5bc8ef01a2c746…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 7db2ead826697c80…) + spec/pending.json + spec/resources.json.
 """
 
 from typing import NamedTuple, Optional, Tuple
@@ -199,7 +199,7 @@ ROUTES: Tuple[Route, ...] = (
     Route("POST", "/api/v1/forms/{id}/versions", "whatsappForm.storeVersion", "conversations", "conversations:write", "Funciones de WhatsApp", "Formularios", "Crear una versión de un formulario", None, False),
     Route("GET", "/api/v1/groups", "group.index", "communities", "communities:read", "Funciones de WhatsApp", "Grupos", "Ver los grupos de tu cuenta", None, False),
     Route("POST", "/api/v1/groups", "apiGroupAction.create", "communities", "communities:operate", "Funciones de WhatsApp", "Acciones de grupo", "Crear un grupo", None, False),
-    Route("GET", "/api/v1/groups/actions/{action}", "apiGroupAction.show", "communities", "communities:read", "Funciones de WhatsApp", "Acciones de grupo", "Ver cómo salió una acción de grupo", None, True),
+    Route("GET", "/api/v1/groups/actions/{action}", "apiGroupAction.show", "communities", "communities:read", "Funciones de WhatsApp", "Acciones de grupo", "Ver cómo salió una acción de grupo", None, False),
     Route("GET", "/api/v1/groups/participants", "group.participants", "communities", "communities:read", "Funciones de WhatsApp", "Grupos", "Ver los participantes de un grupo", None, False),
     Route("GET", "/api/v1/groups/{groupUid}/metadata", "groupMetadata.show", "communities", "communities:read", "Funciones de WhatsApp", "Grupos", "Ver los datos de un grupo en WhatsApp", None, False),
     Route("GET", "/api/v1/groups/{group}", "group.show", "communities", "communities:read", "Funciones de WhatsApp", "Grupos", "Ver un grupo", None, False),

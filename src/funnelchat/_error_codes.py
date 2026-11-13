@@ -5,7 +5,7 @@ tables as funnelchat-node 0.4.0 (src/core/error-codes.ts). Sources, all in produ
 04-11-2026: the key gate as accounts v1.5.97 runs it; the API entry as deployed to production on
 25-10-2026; conversations v1.19.7 (the send rules and the checks before sending a form); accounts
 v1.5.97 (creating and connecting numbers); communities v2.35.5 and v2.35.7 (the rejections of a
-group action). The spec the portal publishes (portal v0.6.15) declares the common codes every area
+group action). The spec the portal publishes (portal v0.6.16) declares the common codes every area
 answers with, those of the key gate in its `403` and `429`, and many of the rest in the operations
 that answer them, but not those of the API entry. When it declares all of them, these tables can be
 generated.
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 #: Errors any route can answer: those of the API entry and of the key gate, and the common ones
-#: every area answers with, as the spec the portal publishes (portal v0.6.15) declares them.
+#: every area answers with, as the spec the portal publishes (portal v0.6.16) declares them.
 ACCESS_ERROR_CODES: Dict[str, int] = {
     "unauthenticated": 401,  # missing or invalid API key
     "payment_required": 402,  # the account's payment is overdue: pay it in the Funnelchat panel
@@ -48,6 +48,7 @@ ACCESS_ERROR_CODES: Dict[str, int] = {
     "daily_cap_exceeded": 429,  # with Retry-After: the daily call cap of the key in that area
     "internal_error": 500,  # (502 on some routes) report it with the request id; after a write, read the state
     "edge_misconfigured": 500,  # our problem: report it with the request id
+    "gate_misconfigured": 500,  # the key gate's problem, not the call's: report it with the request id
     "origin_unreachable": 502,  # no guarantee the area did not get the call: read the state after a write
     "gate_unavailable": 503,  # with Retry-After: nothing ran; safe to retry
 }
@@ -73,10 +74,15 @@ SEND_ERROR_CODES: Dict[str, int] = {
     "form_not_published": 422,  # the form is not published
     "form_not_on_number": 422,  # the form is not published on that number
     "number_not_eligible": 422,  # the number cannot send forms
+    "template_waba_mismatch": 422,  # the template is of another WhatsApp Business account than the number's
 }
 
 #: Rejections of creating a number, asking for its QR or creating, reading or revoking a connect
-#: link: nothing was created. A code with two statuses has the one of the create here.
+#: link, and of the functions of a number (`devices.update()`, `devices.health()`, its username, its
+#: Conversions API): nothing was created or changed. A code with two statuses has the one of the
+#: create here. Not here, since its status is not one: `meta_error`, when Meta refuses a call about
+#: the username of a number, answers the HTTP status Meta gave, with Meta's reason in `message`
+#: (and a connect link that ends with it says so in `error_code`).
 NUMBER_ERROR_CODES: Dict[str, int] = {
     "numbers_not_included": 403,  # the plan does not include numbers
     "number_limit_reached": 403,  # every number of the plan is in use (`limit`, `used`, `pending_device_ids`)
@@ -94,13 +100,16 @@ NUMBER_ERROR_CODES: Dict[str, int] = {
     "provisioning_quota_exceeded": 409,  # `devices.qr()` when no more QR sessions can start now
     "link_not_pending": 409,  # revoking a connect link that already ended
     "too_many_open_links": 429,  # 20 connect links open: revoke some; not worth retrying
-    "provider_error": 500,  # (502 on `devices.qr()` and `devices.status()`) the WhatsApp provider failed
+    "provider_error": 500,  # (502 on `devices.qr()`, `devices.status()`, the username, marking read, typing) the provider failed
     "meta_connect_disabled": 503,  # official numbers cannot be connected by link yet; QR links work
     "credentials_not_allowed": 403,  # the connect page was opened with a key or a session
+    "unsupported_provider": 400,  # `devices.update()` of a number that does not allow that edit
+    "device_not_meta": 422,  # the number is not official: `devices.health()`, its username
+    "device_not_ready": 422,  # the official number is not connected to Meta yet: its username, Conversions API
 }
 
-#: Rejections of a message to a group, of following a group and of reading a group action: nothing
-#: was queued or imported. A number or group of another workspace is answered as missing.
+#: Rejections of creating a group, of a message to a group, of following a group and of reading a
+#: group action: nothing was queued or imported. A number or group of another workspace is answered as missing.
 GROUP_ACTION_ERROR_CODES: Dict[str, int] = {
     "device_not_found": 404,  # `device_id` is not a number of the key's workspace
     "group_not_found": 404,  # the group is not one of the key's workspace
@@ -117,6 +126,7 @@ GROUP_ACTION_ERROR_CODES: Dict[str, int] = {
     "import_permission_required": 403,  # following a group needs Groups and campaigns → Manage groups
     "import_rate_limited": 429,  # with Retry-After: the number already followed 5 groups this minute
     "import_in_progress": 409,  # another call is following the same group right now
+    "plan_cap_reached": 402,  # an official group past the plan's cap (`feature`, `parameter`, `cap`, `used` in the body)
 }
 
 #: Rejections of a create sent with `idempotency_key`.
@@ -126,9 +136,11 @@ IDEMPOTENCY_ERROR_CODES: Dict[str, int] = {
     "operation_in_progress": 409,  # the first call with that key is still running
 }
 
-#: Rejections of bringing a number's templates from Meta (`templates.sync()`), as the spec the portal
-#: publishes (portal v0.6.15) enumerates them for `POST /api/v1/devices/{device}/templates`. A number
-#: that does not exist, or is of another workspace, is a `404 not_found`.
+#: Rejections of bringing a number's templates from Meta (`templates.sync()`) and of deleting one
+#: (`templates.delete()`, all but `template_sync_in_progress`), as the spec the portal publishes
+#: (portal v0.6.16) enumerates them for `POST /api/v1/devices/{device}/templates` and `DELETE
+#: /api/v1/devices/{device}/templates/{template}`. A number that does not exist, or is of another
+#: workspace, is a `404 not_found`.
 TEMPLATE_SYNC_ERROR_CODES: Dict[str, int] = {
     "template_sync_in_progress": 409,  # one is already running for that number: do not start another
     "number_not_connected_to_meta": 422,  # a QR number, or one without a WhatsApp Business account or credentials

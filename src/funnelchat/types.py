@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 3e5bc8ef01a2c746…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 7db2ead826697c80…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
@@ -17,6 +17,14 @@ __all__ = [
     "ActionGroupResourceVariant2",
     "AddFormNumberRequest",
     "ApiGroupActionAcceptedResource",
+    "ApiGroupActionResource",
+    "ApiGroupActionResourceResult",
+    "ApiGroupActionResourceResultParticipantsItem",
+    "ApiGroupActionResourceResultVariant2",
+    "ApiGroupActionResourceResultVariant2Group",
+    "ApiGroupActionResourceResultVariant3",
+    "ApiGroupActionResourceResultVariant4",
+    "ApiGroupActionResourceResultVariant4Message",
     "ApiGroupDeviceRequest",
     "ApiGroupImportResource",
     "BillingPaymentFailedEvent",
@@ -134,6 +142,7 @@ __all__ = [
     "FlowFailedEventDataFlow",
     "FormsAddNumberResponse",
     "FormsCreateResponse",
+    "FormsCreateVersionResponse",
     "FormsDefinitionResponse",
     "FormsDefinitionResponseData",
     "FormsDefinitionResponseDataDefinitionVariant2",
@@ -575,23 +584,8 @@ class ContactsAttachCustomFieldBodyItem(TypedDict):
 
 
 class ContactsAttachCustomFieldResponseItem(TypedDict):
-    message: Literal["No autorizado: el campo personalizado no pertenece al usuario autenticado."]
-    status: Literal[403]
-
-
-class ContactsAttachCustomFieldResponseItemVariant2(TypedDict):
-    message: Literal["No autorizado: el contacto no pertenece al usuario autenticado."]
-    status: Literal[403]
-
-
-class ContactsAttachCustomFieldResponseItemVariant3(TypedDict):
-    message: Optional[str]
-    status: Literal[422]
-
-
-class ContactsAttachCustomFieldResponseItemVariant4(TypedDict):
-    message: Literal["Custom field value attached successfully."]
-    status: Literal[201]
+    message: str
+    status: int
 
 
 class ContactsDetachCustomFieldBodyItem(TypedDict):
@@ -1144,6 +1138,13 @@ class FormsUpdateResponse(TypedDict):
     lint: List[Any]
 
 
+class FormsCreateVersionResponse(TypedDict):
+    data: WhatsappFormResource
+    created: bool
+    lint: List[Any]
+    numbers: List[Any]
+
+
 class FormsSyncResponse(TypedDict):
     data: WhatsappFormResource
     lint: List[Any]
@@ -1544,16 +1545,16 @@ class ApiGroupImportResource(TypedDict):
 
 
 class GroupsRetrieveActionResponse(TypedDict):
-    data: PendingGroupAction
+    data: ApiGroupActionResource
 
 
-class PendingGroupAction(TypedDict):
+class ApiGroupActionResource(TypedDict):
     action_id: str
-    type: str
+    type: Literal["create_group", "add_participants", "remove_participants", "promote_admins", "demote_admins", "update_name", "update_description", "update_photo", "update_settings", "renew_invite_link", "send_message", "approve_join_requests", "reject_join_requests"]
     status: Literal["queued", "running", "completed", "failed"]
     device_id: Optional[int]
-    group: Optional[PendingGroupActionGroup]
-    result: Optional[PendingGroupActionResult]
+    group: Optional[Dict[str, Any]]
+    result: Union[ApiGroupActionResourceResult, ApiGroupActionResourceResultVariant2, ApiGroupActionResourceResultVariant3, ApiGroupActionResourceResultVariant4, Dict[str, Any], None]
     reason: Optional[str]
     created_at: Optional[str]
     started_at: Optional[str]
@@ -1561,32 +1562,37 @@ class PendingGroupAction(TypedDict):
     failed_at: Optional[str]
 
 
-class PendingGroupActionGroup(TypedDict):
-    uid: str
-    name: Optional[str]
+class ApiGroupActionResourceResult(TypedDict):
+    participants: List[ApiGroupActionResourceResultParticipantsItem]
 
 
-class PendingGroupActionResult(TypedDict, total=False):
-    message: PendingGroupActionResultMessage
-    participants: List[PendingGroupParticipantResult]
-    invite_link: str
-    group: PendingGroupActionResultGroup
-
-
-class PendingGroupActionResultMessage(TypedDict, total=False):
-    uid: str
-
-
-class PendingGroupParticipantResult(TypedDict):
-    identity: str
-    identity_type: Literal["phone", "whatsapp_user"]
+class ApiGroupActionResourceResultParticipantsItem(TypedDict):
+    identity: Optional[str]
+    identity_type: Optional[str]
     status: Literal["added", "invited", "removed", "promoted", "demoted", "approved", "rejected", "failed"]
     reason: Optional[str]
 
 
-class PendingGroupActionResultGroup(TypedDict, total=False):
+class ApiGroupActionResourceResultVariant2(TypedDict):
+    group: ApiGroupActionResourceResultVariant2Group
+    invite_link: Optional[str]
+
+
+class ApiGroupActionResourceResultVariant2Group(TypedDict):
     uid: str
     name: Optional[str]
+
+
+class ApiGroupActionResourceResultVariant3(TypedDict):
+    invite_link: Optional[str]
+
+
+class ApiGroupActionResourceResultVariant4(TypedDict):
+    message: ApiGroupActionResourceResultVariant4Message
+
+
+class ApiGroupActionResourceResultVariant4Message(TypedDict):
+    uid: Optional[str]
 
 
 class DeviceResource(TypedDict):
@@ -2662,6 +2668,13 @@ class GroupActionCompletedEventDataResultMessage(TypedDict, total=False):
     uid: str
 
 
+class PendingGroupParticipantResult(TypedDict):
+    identity: str
+    identity_type: Literal["phone", "whatsapp_user"]
+    status: Literal["added", "invited", "removed", "promoted", "demoted", "approved", "rejected", "failed"]
+    reason: Optional[str]
+
+
 class GroupActionCompletedEvent(TypedDict):
     id: str
     type: Literal["group_action.completed"]
@@ -3256,6 +3269,38 @@ PendingDeviceConnection = Optional[Literal["qr", "coexistence", "dedicated"]]
 
 
 PendingExternalReference = Optional[str]
+
+
+#: Kept from an earlier release: the spec now types it as `ApiGroupActionResource`.
+PendingGroupAction = ApiGroupActionResource
+
+
+#: Kept from an earlier release: the spec now types it as `Dict[str, Any]`.
+PendingGroupActionGroup = Dict[str, Any]
+
+
+#: Kept from an earlier release: the spec now types it as `Dict[str, Any]`.
+PendingGroupActionResult = Dict[str, Any]
+
+
+#: Kept from an earlier release: the spec now types it as `ApiGroupActionResourceResultVariant2Group`.
+PendingGroupActionResultGroup = ApiGroupActionResourceResultVariant2Group
+
+
+#: Kept from an earlier release: the spec now types it as `ApiGroupActionResourceResultVariant4Message`.
+PendingGroupActionResultMessage = ApiGroupActionResourceResultVariant4Message
+
+
+#: Kept from an earlier release: the spec now types it as `ContactsAttachCustomFieldResponseItem`.
+ContactsAttachCustomFieldResponseItemVariant2 = ContactsAttachCustomFieldResponseItem
+
+
+#: Kept from an earlier release: the spec now types it as `ContactsAttachCustomFieldResponseItem`.
+ContactsAttachCustomFieldResponseItemVariant3 = ContactsAttachCustomFieldResponseItem
+
+
+#: Kept from an earlier release: the spec now types it as `ContactsAttachCustomFieldResponseItem`.
+ContactsAttachCustomFieldResponseItemVariant4 = ContactsAttachCustomFieldResponseItem
 
 
 #: Every webhook event type the spec knows.

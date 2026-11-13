@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 3e5bc8ef01a2c746…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 7db2ead826697c80…) + spec/pending.json + spec/resources.json.
 
 The resources of the client: one class per piece of the API, from spec/resources.json.
 """
@@ -28,9 +28,6 @@ if TYPE_CHECKING:
         ContactTagResource,
         ContactsAttachCustomFieldBodyItem,
         ContactsAttachCustomFieldResponseItem,
-        ContactsAttachCustomFieldResponseItemVariant2,
-        ContactsAttachCustomFieldResponseItemVariant3,
-        ContactsAttachCustomFieldResponseItemVariant4,
         ContactsDeleteBodyCustomFieldFiltersItem,
         ContactsDeleteBodyTagFiltersItem,
         ContactsDetachCustomFieldBodyItem,
@@ -55,6 +52,7 @@ if TYPE_CHECKING:
         DevicesQrResponse,
         FormsAddNumberResponse,
         FormsCreateResponse,
+        FormsCreateVersionResponse,
         FormsDefinitionResponse,
         FormsDefinitionResponseVariant2,
         FormsMetricsResponse,
@@ -323,12 +321,12 @@ class Contacts(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`PUT /api/v1/contacts/{contact}`.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "PUT",
             "/api/v1/contacts/{contact}",
             path_params={"contact": contact},
@@ -466,12 +464,12 @@ class Contacts(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3, ContactsAttachCustomFieldResponseItemVariant4]]:
+    ) -> List[ContactsAttachCustomFieldResponseItem]:
         """`POST /api/v1/contacts/attach-custom-field`: sets a custom field on contacts.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("List[Union[ContactsAttachCustomFieldResponseItem, ContactsAttachCustomFieldResponseItemVariant2, ContactsAttachCustomFieldResponseItemVariant3, ContactsAttachCustomFieldResponseItemVariant4]]", self._request(
+        return cast("List[ContactsAttachCustomFieldResponseItem]", self._request(
             "POST",
             "/api/v1/contacts/attach-custom-field",
             body=body,
@@ -1506,7 +1504,12 @@ class Templates(Resource):
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
     ) -> None:
-        """`DELETE /api/v1/devices/{device}/templates/{template}`.
+        """`DELETE /api/v1/devices/{device}/templates/{template}`: deletes a template of a number;
+        answers no body. Rejections (`TEMPLATE_SYNC_ERROR_CODES`): `404` (the number or the template
+        does not exist or is outside the key's workspace), `422 number_not_connected_to_meta` (a QR
+        number, or one without a WhatsApp Business account or credentials), `422 meta_rejected`
+        (Meta refused; its code in `error.body["meta_code"]`) and `502 meta_unavailable` (Meta did
+        not answer).
 
         Permission: **Contacts and conversations → Edit**.
         """
@@ -1675,12 +1678,12 @@ class Forms(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> List[Any]:
+    ) -> None:
         """`DELETE /api/v1/forms/{id}`: deletes a draft (a published form is deprecated, not deleted).
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("List[Any]", self._request(
+        return cast("None", self._request(
             "DELETE",
             "/api/v1/forms/{id}",
             path_params={"id": id},
@@ -1698,13 +1701,13 @@ class Forms(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> str:
+    ) -> FormsCreateVersionResponse:
         """`POST /api/v1/forms/{id}/versions`: a new draft from this version, or the draft that already
         existed (`created` false).
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("str", self._request(
+        return cast("FormsCreateVersionResponse", self._request(
             "POST",
             "/api/v1/forms/{id}/versions",
             path_params={"id": id},
@@ -2121,12 +2124,12 @@ class Tags(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`PUT /api/v1/tags/{tag}`.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "PUT",
             "/api/v1/tags/{tag}",
             path_params={"tag": tag},
@@ -2145,12 +2148,12 @@ class Tags(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`POST /api/v1/tags/delete`: deletes the tags in `tagIds`.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "POST",
             "/api/v1/tags/delete",
             body={"tagIds": tagIds},
@@ -2319,12 +2322,12 @@ class CustomFields(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """`POST /api/v1/custom-fields/delete`.
 
         Permission: **Contacts and conversations → Edit**.
         """
-        return cast("Dict[str, Any]", self._request(
+        return cast("None", self._request(
             "POST",
             "/api/v1/custom-fields/delete",
             body={"customFieldIds": customFieldIds},

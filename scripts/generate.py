@@ -38,6 +38,8 @@ Steps:
   4. src/funnelchat/types.py     TypedDicts: the schemas the methods of the SDK use, the response of
                                  each method and every webhook event (from its schema when it lists
                                  its properties and which are required, otherwise from its example).
+                                 A name a published release exported and the spec no longer
+                                 generates stays as an alias (RETIRED_TYPES, below).
   5. src/funnelchat/resources.py the resources of spec/resources.json: each method's path
                                  parameters, keyword arguments (query or body) and return type come
                                  from its operation. A method whose operation is no longer in the
@@ -67,7 +69,7 @@ import sys
 import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent
 SPEC_FILE = ROOT / "spec" / "funnelchat.json"
@@ -1146,6 +1148,42 @@ PENDING_EVENT_FIELDS: Tuple[Dict[str, Any], ...] = (
 )
 
 
+# Names of src/funnelchat/types.py that a published release exported and a newer spec no longer
+# generates: each stays importable, as an alias of what the spec types now, so that regenerating
+# never breaks an import in a patch release. Removing one breaks code that imports it: only in a
+# release that says so in "Upgrading" of the README.
+RETIRED_TYPES: Dict[str, str] = {
+    # 0.5.1 to 0.5.2: the spec types `GET /api/v1/groups/actions/{action}`, which spec/pending.json typed.
+    "PendingGroupAction": "ApiGroupActionResource",
+    "PendingGroupActionGroup": "Dict[str, Any]",
+    "PendingGroupActionResult": "Dict[str, Any]",
+    "PendingGroupActionResultGroup": "ApiGroupActionResourceResultVariant2Group",
+    "PendingGroupActionResultMessage": "ApiGroupActionResourceResultVariant4Message",
+    # 0.5.1 to 0.5.2: each item of `POST /api/v1/contacts/attach-custom-field` has one shape.
+    "ContactsAttachCustomFieldResponseItemVariant2": "ContactsAttachCustomFieldResponseItem",
+    "ContactsAttachCustomFieldResponseItemVariant3": "ContactsAttachCustomFieldResponseItem",
+    "ContactsAttachCustomFieldResponseItemVariant4": "ContactsAttachCustomFieldResponseItem",
+}
+
+
+def retired_aliases(generated: Set[str]) -> Tuple[Dict[str, str], List[str]]:
+    """The aliases of RETIRED_TYPES, and the names the spec generates again (to delete from it)."""
+    aliases: Dict[str, str] = {}
+    again: List[str] = []
+    for name, target in RETIRED_TYPES.items():
+        if name in generated:
+            again.append(name)
+            continue
+        unknown = [n for n in re.findall(r"\b[A-Z][A-Za-z0-9_]*\b", target) if n not in generated and n not in TYPING_NAMES]
+        if unknown:
+            raise GenerationError(f"RETIRED_TYPES: {name} points to {', '.join(unknown)}, which the spec no longer generates")
+        aliases[name] = f"#: Kept from an earlier release: the spec now types it as `{target}`.\n{name} = {target}"
+    return aliases, again
+
+
+TYPING_NAMES = frozenset({"Any", "Dict", "List", "Literal", "Optional", "Union"})
+
+
 def apply_event_fields(merged: Dict[str, Any]) -> Dict[str, List[str]]:
     """Applies PENDING_EVENT_FIELDS to the events of the merged spec, in place."""
     report: Dict[str, List[str]] = {"applied": [], "superseded": [], "missing": []}
@@ -1439,6 +1477,10 @@ def generate_types_and_resources(
                 exact=True,
             )
         )
+
+    retired, again = retired_aliases(set(types.blocks) | set(types.aliases))
+    warnings += [f"RETIRED_TYPES: the spec generates {name} again; delete it from scripts/generate.py" for name in again]
+    types.aliases.update(retired)
 
     used_in_resources = sorted(
         {n for block in resource_blocks for n in re.findall(r"\b[A-Z][A-Za-z0-9_]*\b", block) if n in types.blocks or n in types.aliases}
