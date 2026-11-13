@@ -61,9 +61,9 @@ class APIError(FunnelchatError):
     """The API answered with a non-2xx status.
 
     - `status`: the HTTP status.
-    - `code`: the stable `error` of the body (`window_closed`, `rate_limited`,
-      `route_not_available`…), or `None` when the body has none (for example a validation `422`,
-      which carries `errors` instead). Decide by `status` and `code`, never by `message`.
+    - `code`: the stable `error` of the body (`validation_failed`, `not_found`,
+      `payment_required`, `window_closed`, `rate_limited`…). Every error of the API carries one;
+      `None` only when the body has none, such as a page from a proxy. Decide by `status` and `code`, never by `message`.
     - `message`: the `message` of the body, meant for people.
     - `request_id`: the `X-Request-Id` of the response. Quote it when you report a problem.
     - `retry_after`: the seconds of the `Retry-After` header, when present.
@@ -125,11 +125,14 @@ class AuthenticationError(APIError):
 
 
 class PermissionDeniedError(APIError):
-    """403: the key lacks the permission, or the route is not open to keys (`route_not_available`)."""
+    """403 (`forbidden`, `permission_denied`…): the key lacks the permission, the route is not open to
+    keys (`route_not_available`), or the key's workspace cannot use it (`workspace_deleted`,
+    `workspace_permission_denied`…)."""
 
 
 class NotFoundError(APIError):
-    """404: the resource does not exist, or belongs to another workspace than the key's."""
+    """404 (`not_found`, or a more specific code): the resource does not exist, or belongs to another
+    account or to another workspace than the key's; both answer the same."""
 
 
 class ConflictError(APIError):
@@ -142,7 +145,7 @@ class UnsupportedMediaTypeError(APIError):
 
 
 class UnprocessableEntityError(APIError):
-    """422: validation (`errors`) or a rule of the send (`window_closed`, `antiblock_*`…)."""
+    """422: validation (`validation_failed`, with `errors`) or a rule of the send (`window_closed`, `antiblock_*`…)."""
 
 
 class RateLimitError(APIError):
@@ -151,7 +154,7 @@ class RateLimitError(APIError):
 
 
 class InternalServerError(APIError):
-    """5xx. After a `5xx` on a write, read the state before repeating it: it may have been applied."""
+    """5xx (`internal_error`; `provider_error` when the WhatsApp provider failed). After a `5xx` on a write, read the state before repeating it: it may have been applied."""
 
 
 _BY_STATUS = {

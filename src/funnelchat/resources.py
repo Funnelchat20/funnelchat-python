@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 37c54a5aad4cc467…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 3e5bc8ef01a2c746…) + spec/pending.json + spec/resources.json.
 
 The resources of the client: one class per piece of the API, from spec/resources.json.
 """
@@ -639,12 +639,14 @@ class Conversations(Resource):
     def list(
         self,
         *,
+        perName: str | NotGiven = NOT_GIVEN,
+        contactId: int | NotGiven = NOT_GIVEN,
+        cursor: str | NotGiven = NOT_GIVEN,
+        updated_since: str | NotGiven = NOT_GIVEN,
         favorites: bool | NotGiven = NOT_GIVEN,
         ownContacts: bool | NotGiven = NOT_GIVEN,
         ownAndUnassigned: bool | NotGiven = NOT_GIVEN,
-        perName: str | NotGiven = NOT_GIVEN,
         deviceId: int | NotGiven = NOT_GIVEN,
-        contactId: int | NotGiven = NOT_GIVEN,
         advisorId: int | NotGiven = NOT_GIVEN,
         advisorIds: str | NotGiven = NOT_GIVEN,
         activeConversation: bool | NotGiven = NOT_GIVEN,
@@ -654,8 +656,6 @@ class Conversations(Resource):
         unreadMessages: bool | NotGiven = NOT_GIVEN,
         awaitingReply: bool | NotGiven = NOT_GIVEN,
         onlyWithMac: bool | NotGiven = NOT_GIVEN,
-        cursor: str | NotGiven = NOT_GIVEN,
-        updated_since: str | NotGiven = NOT_GIVEN,
         paused: Literal["true", "false", "1", "0"] | NotGiven = NOT_GIVEN,
         leadScoreCategories: Optional[str] | NotGiven = NOT_GIVEN,
         leadScoreMin: int | NotGiven = NOT_GIVEN,
@@ -681,12 +681,14 @@ class Conversations(Resource):
         return self._paginate(
             "/api/v1/conversations",
             query={
+                "perName": perName,
+                "contactId": contactId,
+                "cursor": cursor,
+                "updated_since": updated_since,
                 "favorites": favorites,
                 "ownContacts": ownContacts,
                 "ownAndUnassigned": ownAndUnassigned,
-                "perName": perName,
                 "deviceId": deviceId,
-                "contactId": contactId,
                 "advisorId": advisorId,
                 "advisorIds": advisorIds,
                 "activeConversation": activeConversation,
@@ -696,8 +698,6 @@ class Conversations(Resource):
                 "unreadMessages": unreadMessages,
                 "awaitingReply": awaitingReply,
                 "onlyWithMac": onlyWithMac,
-                "cursor": cursor,
-                "updated_since": updated_since,
                 "paused": paused,
                 "leadScoreCategories": leadScoreCategories,
                 "leadScoreMin": leadScoreMin,
