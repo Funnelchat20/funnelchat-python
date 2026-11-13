@@ -20,7 +20,9 @@ concurrency:
 jobs:
   test:
     name: Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    # Pinned: actions/setup-python has builds of every Python below for Ubuntu 24.04, while 3.9 has
+    # none for Ubuntu 26.04, the one ubuntu-latest points to.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
