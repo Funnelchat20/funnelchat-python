@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 37c54a5aad4cc467…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 3e5bc8ef01a2c746…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
@@ -441,6 +441,7 @@ class ContactResource(_ContactResourceRequired, total=False):
     last_message: ContactResourceLastMessage
     paused_by: Any
     is_mac_inactive: bool
+    opted_out: bool
     stage_since: str
     is_stagnant: bool
     follow_up_date: Optional[str]
@@ -559,6 +560,7 @@ class ContactTagResource(TypedDict):
     name: str
     description: str
     color: str
+    is_system: bool
     created_at: Optional[str]
     updated_at: Optional[str]
     contact_count: str
@@ -1348,6 +1350,7 @@ class TagResource(TypedDict):
     name: str
     description: str
     color: Optional[str]
+    is_system: bool
     created_at: Optional[str]
     updated_at: Optional[str]
     contact_count: Union[str, int]

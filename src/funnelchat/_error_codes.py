@@ -5,9 +5,10 @@ tables as funnelchat-node 0.4.0 (src/core/error-codes.ts). Sources, all in produ
 04-11-2026: the key gate as accounts v1.5.97 runs it; the API entry as deployed to production on
 25-10-2026; conversations v1.19.7 (the send rules and the checks before sending a form); accounts
 v1.5.97 (creating and connecting numbers); communities v2.35.5 and v2.35.7 (the rejections of a
-group action). The spec the portal publishes (portal v0.6.13) documents some of these codes in the
-operations that answer them, but not those of the API entry and the key gate. When it documents all
-of them, these tables can be generated.
+group action). The spec the portal publishes (portal v0.6.15) declares the common codes every area
+answers with, those of the key gate in its `403` and `429`, and many of the rest in the operations
+that answer them, but not those of the API entry. When it declares all of them, these tables can be
+generated.
 """
 
 from __future__ import annotations
@@ -26,13 +27,26 @@ __all__ = [
     "is_number_quota_error",
 ]
 
-#: Errors of the API entry and of the key gate, on any route.
+#: Errors any route can answer: those of the API entry and of the key gate, and the common ones
+#: every area answers with, as the spec the portal publishes (portal v0.6.15) declares them.
 ACCESS_ERROR_CODES: Dict[str, int] = {
     "unauthenticated": 401,  # missing or invalid API key
+    "payment_required": 402,  # the account's payment is overdue: pay it in the Funnelchat panel
+    "not_found": 404,  # does not exist, or belongs to another account or workspace: both answer the same
+    "conflict": 409,  # the current state does not allow it (the common code of a 409)
+    "validation_failed": 422,  # the request is not valid; `errors` says which fields
+    "rate_limited": 429,  # with Retry-After: the per-minute limit of the route (the spec gives each one)
+    "bad_request": 400,  # the request could not be read (the common code of a 400)
+    "forbidden": 403,  # the caller cannot use this route (the common code of a 403)
     "permission_denied": 403,  # the key lacks the permission the route needs (`message` names it)
     "route_not_available": 403,  # the route is not open to API keys (or is turned off)
+    "workspace_deleted": 403,  # the key's workspace no longer exists
+    "workspace_permission_denied": 403,  # the key's user lacks that permission in its workspace (its role)
+    "workspace_foreign_account": 403,  # only a key of a workspace of the account itself can use the route
+    "workspace_account_level": 403,  # the route is about the whole account: only a key of the default workspace
     "route_not_found": 404,  # the path does not exist in the public API
     "daily_cap_exceeded": 429,  # with Retry-After: the daily call cap of the key in that area
+    "internal_error": 500,  # (502 on some routes) report it with the request id; after a write, read the state
     "edge_misconfigured": 500,  # our problem: report it with the request id
     "origin_unreachable": 502,  # no guarantee the area did not get the call: read the state after a write
     "gate_unavailable": 503,  # with Retry-After: nothing ran; safe to retry
@@ -67,7 +81,7 @@ NUMBER_ERROR_CODES: Dict[str, int] = {
     "numbers_not_included": 403,  # the plan does not include numbers
     "number_limit_reached": 403,  # every number of the plan is in use (`limit`, `used`, `pending_device_ids`)
     "connect_not_allowed": 403,  # the account cannot connect numbers now
-    "payment_required": 403,  # `devices.qr()` of a number whose payment is due
+    "payment_required": 402,  # the account's payment is overdue (also in ACCESS_ERROR_CODES)
     "pending_number_exists": 409,  # a QR number is already waiting to be scanned; the body brings its `device_id`
     "qr_requires_coexistence": 422,  # (409 on `devices.qr()`) QR only on an official number in coexistence
     "method_already_present": 422,  # the number already has that method; the body brings its `device_id`
@@ -80,7 +94,7 @@ NUMBER_ERROR_CODES: Dict[str, int] = {
     "provisioning_quota_exceeded": 409,  # `devices.qr()` when no more QR sessions can start now
     "link_not_pending": 409,  # revoking a connect link that already ended
     "too_many_open_links": 429,  # 20 connect links open: revoke some; not worth retrying
-    "provider_error": 500,  # (502 on `devices.qr()`) the WhatsApp provider failed
+    "provider_error": 500,  # (502 on `devices.qr()` and `devices.status()`) the WhatsApp provider failed
     "meta_connect_disabled": 503,  # official numbers cannot be connected by link yet; QR links work
     "credentials_not_allowed": 403,  # the connect page was opened with a key or a session
 }
@@ -113,8 +127,8 @@ IDEMPOTENCY_ERROR_CODES: Dict[str, int] = {
 }
 
 #: Rejections of bringing a number's templates from Meta (`templates.sync()`), as the spec the portal
-#: publishes (portal v0.6.13) enumerates them for `POST /api/v1/devices/{device}/templates`. A number
-#: that does not exist, or is of another workspace, is a `404` without a code.
+#: publishes (portal v0.6.15) enumerates them for `POST /api/v1/devices/{device}/templates`. A number
+#: that does not exist, or is of another workspace, is a `404 not_found`.
 TEMPLATE_SYNC_ERROR_CODES: Dict[str, int] = {
     "template_sync_in_progress": 409,  # one is already running for that number: do not start another
     "number_not_connected_to_meta": 422,  # a QR number, or one without a WhatsApp Business account or credentials
