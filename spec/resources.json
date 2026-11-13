@@ -81,7 +81,7 @@
         { "name": "retrieve", "op": "GET /api/v1/templates/{template}", "doc": "`GET /api/v1/templates/{template}`." },
         { "name": "update", "op": "PUT /api/v1/templates/{template}", "doc": "`PUT /api/v1/templates/{template}`." },
         { "name": "send", "op": "POST /api/v1/devices/{device}/templates/{template}/send-template", "doc": "`POST /api/v1/devices/{device}/templates/{template}/send-template`: sends an approved template, the way to write to a contact outside the 24-hour window. Send `phone` alone (the contact is created when it does not exist, as with `messages.send_direct()`), or `contact_id`, or both when they are the same contact; `template_variables` `{\"body\": [...]}` fills the body variables in order. Returns `{\"message\": ...}`, the registered message with `status` `queued`. A variable that points to a field that does not exist is `422 template_unresolved_placeholder`; a template this account cannot send, `404 template_not_found`. It is a send: never retried automatically." },
-        { "name": "delete", "op": "DELETE /api/v1/devices/{device}/templates/{template}", "doc": "`DELETE /api/v1/devices/{device}/templates/{template}`." }
+        { "name": "delete", "op": "DELETE /api/v1/devices/{device}/templates/{template}", "doc": "`DELETE /api/v1/devices/{device}/templates/{template}`: deletes a template of a number; answers no body. Rejections (`TEMPLATE_SYNC_ERROR_CODES`): `404` (the number or the template does not exist or is outside the key's workspace), `422 number_not_connected_to_meta` (a QR number, or one without a WhatsApp Business account or credentials), `422 meta_rejected` (Meta refused; its code in `error.body[\"meta_code\"]`) and `502 meta_unavailable` (Meta did not answer)." }
       ]
     },
     {

@@ -218,7 +218,7 @@ A key has the permissions ticked when it was created. The panel groups them by a
 | Follow a group | **Groups and campaigns → Manage groups** |
 | Webhook subscriptions | **Notifications (webhooks) → View** to read, **Manage** for the rest, plus **View** of the area of each event |
 
-Each key belongs to the workspace where it was created and only sees what is in it: anything of another workspace answers `404`. Every webhook event carries `data["workspace_id"]`, and a subscription only receives the events of its own workspace.
+Each key belongs to the workspace where it was created and only sees what is in it: anything of another workspace answers `404`. Every webhook event carries `data["workspace_id"]`, and a subscription only receives the events of its own workspace. A workspace has at most 50 subscriptions, whatever their status: one more answers `422 webhooks_limit_reached`.
 
 ### Send a message
 
@@ -332,7 +332,7 @@ Everything the SDK raises extends `FunnelchatError`. When the API answers with a
 | `errors` | In a validation `422` (`validation_failed`), the messages per field. |
 | `body` | The full decoded body. |
 
-Each status has its class: `BadRequestError` (400), `AuthenticationError` (401), `PermissionDeniedError` (403), `NotFoundError` (404), `ConflictError` (409), `UnsupportedMediaTypeError` (415), `UnprocessableEntityError` (422), `RateLimitError` (429) and `InternalServerError` (5xx). No response: `APIConnectionError`, and `APIConnectionTimeoutError` when it went over `timeout`. A status without its own class, such as `402 payment_required` (the account's payment is overdue), is a plain `APIError`.
+Each status has its class: `BadRequestError` (400), `AuthenticationError` (401), `PermissionDeniedError` (403), `NotFoundError` (404), `ConflictError` (409), `UnsupportedMediaTypeError` (415), `UnprocessableEntityError` (422), `RateLimitError` (429) and `InternalServerError` (5xx). No response: `APIConnectionError`, and `APIConnectionTimeoutError` when it went over `timeout`. A status without its own class, such as `402 payment_required` (the account's payment is overdue) or `402 plan_cap_reached` (a cap of the plan, with `cap` and `used` in `body`), is a plain `APIError`.
 
 ```python
 from funnelchat import APIError, RateLimitError
@@ -384,7 +384,7 @@ The types come from the spec the developer portal publishes (`spec/funnelchat.js
 - what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, and the answers of `webhooks.update` and `groups.retrieve_action`;
 - the `data` of the events the spec shows only by an example, or without one, such as the `device.*` events, `message.received`, `message.status_changed` and the group events (`group.message_received` and `group.reaction_added` carry `message["uid"]`, as production sends them and the published example shows).
 
-The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message.
+The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message. A name of `funnelchat.types` that a published release exported and a newer spec no longer generates stays importable, as an alias of what the spec types now (`RETIRED_TYPES`).
 
 ### Upgrading from 0.4
 
@@ -421,7 +421,7 @@ Everything generated comes from one script, standard library only. The spec in `
 <!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->
 ```bash
 curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
-python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.15
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.16
 ```
 <!-- /generated:import -->
 
