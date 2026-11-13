@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import typing
 from pathlib import Path
 from typing import Any, Dict
 
@@ -63,6 +64,14 @@ def test_group_events_carry_the_message_uid_production_sends() -> None:
     for name in ("GroupMessageReceivedEventDataMessage", "GroupReactionAddedEventDataMessage"):
         fields = getattr(types, name).__annotations__
         assert "uid" in fields and "id" not in fields, name
+
+
+def test_every_type_resolves_at_runtime() -> None:
+    # pydantic and FastAPI read a TypedDict with typing.get_type_hints, on every Python the SDK supports.
+    classes = [value for value in vars(types).values() if isinstance(value, type) and issubclass(value, dict) and value is not dict]
+    assert len(classes) > 300
+    for cls in classes:
+        typing.get_type_hints(cls)
 
 
 def test_portal_groups_read_the_category_as_the_spec_gives_it() -> None:

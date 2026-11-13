@@ -666,12 +666,17 @@ class Types:
         if not fields:
             return f"{name} = Dict[str, Any]"
         if all(is_identifier(key) for key, _, _ in fields):
-            total = any(req for _, _, req in fields)
-            head = f"class {name}(TypedDict):" if total else f"class {name}(TypedDict, total=False):"
-            lines = [head]
-            for key, type_text, req in fields:
-                lines.append(f"    {key}: {type_text if req or not total else f'NotRequired[{type_text}]'}")
-            return "\n".join(lines)
+            required = [f"    {key}: {type_text}" for key, type_text, req in fields if req]
+            optional = [f"    {key}: {type_text}" for key, type_text, req in fields if not req]
+            if not optional:
+                return "\n".join([f"class {name}(TypedDict):", *required])
+            if not required:
+                return "\n".join([f"class {name}(TypedDict, total=False):", *optional])
+            # Required and optional keys: the required ones in a private base, so that every type
+            # resolves at runtime with `typing.get_type_hints` (pydantic, FastAPI) on Python 3.9,
+            # where `typing` has no `NotRequired`.
+            base = f"_{name}Required"
+            return "\n".join([f"class {base}(TypedDict):", *required, "", "", f"class {name}({base}, total=False):", *optional])
         # A key that is not a Python name: the functional syntax, whose values run at import time.
         total = all(req for _, _, req in fields)
         items = ", ".join(f"{json.dumps(key, ensure_ascii=False)}: {quote_names(t)}" for key, t, _ in fields)
@@ -1371,10 +1376,7 @@ def generate_types_and_resources(
         "",
         "from __future__ import annotations",
         "",
-        "from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypedDict, Union",
-        "",
-        "if TYPE_CHECKING:",
-        "    from typing_extensions import NotRequired",
+        "from typing import Any, Dict, List, Literal, Optional, TypedDict, Union",
         "",
         "__all__ = [",
         *[f'    "{n}",' for n in sorted(names + ["WebhookEvent", "WebhookEventType"])],
