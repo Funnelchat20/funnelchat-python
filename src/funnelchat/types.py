@@ -1,16 +1,13 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 a7b480743848dabc…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 37c54a5aad4cc467…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypedDict, Union
-
-if TYPE_CHECKING:
-    from typing_extensions import NotRequired
+from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
 
 __all__ = [
     "AccountBlockedEvent",
@@ -392,54 +389,63 @@ __all__ = [
 ]
 
 
-class ContactsListQueryTagFiltersItem(TypedDict):
+class _ContactsListQueryTagFiltersItemRequired(TypedDict):
     mode: Literal["all", "any", "exclude"]
-    tag_ids: NotRequired[List[int]]
 
 
-class ContactsListQueryCustomFieldFiltersItem(TypedDict):
+class ContactsListQueryTagFiltersItem(_ContactsListQueryTagFiltersItemRequired, total=False):
+    tag_ids: List[int]
+
+
+class _ContactsListQueryCustomFieldFiltersItemRequired(TypedDict):
     type: Literal[0, 1, 2, 3, 4]
-    mode: NotRequired[Optional[Literal["all", "any", "exclude"]]]
-    value: NotRequired[Optional[str]]
-    date_from: NotRequired[Optional[str]]
-    date_to: NotRequired[Optional[str]]
-    numeric_operator: NotRequired[Optional[Literal["lt", "eq", "gt"]]]
-    numeric_value: NotRequired[Optional[float]]
-    date_operator: NotRequired[Optional[Literal["lt", "gt", "eq", "period"]]]
-    custom_field_ids: NotRequired[List[int]]
 
 
-class ContactResource(TypedDict):
+class ContactsListQueryCustomFieldFiltersItem(_ContactsListQueryCustomFieldFiltersItemRequired, total=False):
+    mode: Optional[Literal["all", "any", "exclude"]]
+    value: Optional[str]
+    date_from: Optional[str]
+    date_to: Optional[str]
+    numeric_operator: Optional[Literal["lt", "eq", "gt"]]
+    numeric_value: Optional[float]
+    date_operator: Optional[Literal["lt", "gt", "eq", "period"]]
+    custom_field_ids: List[int]
+
+
+class _ContactResourceRequired(TypedDict):
     id: int
     name: str
     email: str
     phone: str
     whatsapp_id: str
-    whatsapp_username: NotRequired[Optional[str]]
     has_phone: bool
     country_code: str
     status: int
     image: str
     notes: Optional[str]
-    custom_fields: NotRequired[List[ContactCustomFieldResource]]
     created_at: Optional[str]
     active_conversation: int
     favorite: int
     unread_messages: int
-    manually_unread: NotRequired[bool]
-    last_message: NotRequired[ContactResourceLastMessage]
     device_id: Optional[int]
     adviser_id: Optional[int]
     paused_at: Optional[str]
-    paused_by: NotRequired[Any]
     mac_date: Optional[str]
-    is_mac_inactive: NotRequired[bool]
     ai_assistant_name: Optional[str]
-    stage_since: NotRequired[str]
-    is_stagnant: NotRequired[bool]
-    follow_up_date: NotRequired[Optional[str]]
-    lead_score: NotRequired[ContactResourceLeadScore]
-    name_mismatch: NotRequired[Optional[List[Any]]]
+
+
+class ContactResource(_ContactResourceRequired, total=False):
+    whatsapp_username: Optional[str]
+    custom_fields: List[ContactCustomFieldResource]
+    manually_unread: bool
+    last_message: ContactResourceLastMessage
+    paused_by: Any
+    is_mac_inactive: bool
+    stage_since: str
+    is_stagnant: bool
+    follow_up_date: Optional[str]
+    lead_score: ContactResourceLeadScore
+    name_mismatch: Optional[List[Any]]
 
 
 class ContactCustomFieldResource(TypedDict):
@@ -493,11 +499,14 @@ class StoreContactRequestCustomFieldsItem2(TypedDict):
     value: str
 
 
-class UpdateOrCreateContactRequest(TypedDict):
+class _UpdateOrCreateContactRequestRequired(TypedDict):
     phone: str
-    name: NotRequired[Optional[str]]
-    email: NotRequired[Optional[str]]
-    custom_fields: NotRequired[List[UpdateOrCreateContactRequestCustomFieldsItem]]
+
+
+class UpdateOrCreateContactRequest(_UpdateOrCreateContactRequestRequired, total=False):
+    name: Optional[str]
+    email: Optional[str]
+    custom_fields: List[UpdateOrCreateContactRequestCustomFieldsItem]
 
 
 class UpdateOrCreateContactRequestCustomFieldsItem(TypedDict):
@@ -530,16 +539,19 @@ class ContactsDeleteBodyTagFiltersItem(TypedDict):
     mode: Literal["all", "any", "exclude"]
 
 
-class ContactsDeleteBodyCustomFieldFiltersItem(TypedDict):
+class _ContactsDeleteBodyCustomFieldFiltersItemRequired(TypedDict):
     custom_field_ids: List[int]
     type: Literal["0", "1", "2", "3", "4"]
-    mode: NotRequired[Optional[Literal["all", "any", "exclude"]]]
-    value: NotRequired[Optional[str]]
-    date_from: NotRequired[Optional[str]]
-    date_to: NotRequired[Optional[str]]
-    numeric_operator: NotRequired[Optional[Literal["lt", "eq", "gt"]]]
-    numeric_value: NotRequired[Optional[float]]
-    date_operator: NotRequired[Optional[Literal["lt", "gt", "eq", "period"]]]
+
+
+class ContactsDeleteBodyCustomFieldFiltersItem(_ContactsDeleteBodyCustomFieldFiltersItemRequired, total=False):
+    mode: Optional[Literal["all", "any", "exclude"]]
+    value: Optional[str]
+    date_from: Optional[str]
+    date_to: Optional[str]
+    numeric_operator: Optional[Literal["lt", "eq", "gt"]]
+    numeric_value: Optional[float]
+    date_operator: Optional[Literal["lt", "gt", "eq", "period"]]
 
 
 class ContactTagResource(TypedDict):
@@ -654,23 +666,26 @@ class ConversationsMarkAllUnreadResponse(TypedDict):
     contact_ids: Dict[str, Any]
 
 
-class SendMessageRequest(TypedDict):
-    phone: NotRequired[str]
-    whatsapp_id: NotRequired[str]
+class _SendMessageRequestRequired(TypedDict):
     device_id: int
-    text: NotRequired[str]
     contact_id: int
-    file: NotRequired[str]
-    file_type: NotRequired[Optional[Literal["image", "video", "audio", "document", "sticker"]]]
-    file_name: NotRequired[Optional[str]]
-    temporal_uuid: NotRequired[str]
-    note: NotRequired[bool]
-    mentions: NotRequired[Optional[List[int]]]
-    options: NotRequired[List[SendMessageRequestOptionsItem]]
-    reference_message_uid: NotRequired[Optional[str]]
-    client_reference: NotRequired[Optional[str]]
-    link_preview: NotRequired[bool]
-    link_preview_meta: NotRequired[SendMessageRequestLinkPreviewMeta]
+
+
+class SendMessageRequest(_SendMessageRequestRequired, total=False):
+    phone: str
+    whatsapp_id: str
+    text: str
+    file: str
+    file_type: Optional[Literal["image", "video", "audio", "document", "sticker"]]
+    file_name: Optional[str]
+    temporal_uuid: str
+    note: bool
+    mentions: Optional[List[int]]
+    options: List[SendMessageRequestOptionsItem]
+    reference_message_uid: Optional[str]
+    client_reference: Optional[str]
+    link_preview: bool
+    link_preview_meta: SendMessageRequestLinkPreviewMeta
 
 
 class SendMessageRequestOptionsItem(TypedDict, total=False):
@@ -716,39 +731,45 @@ class PublicMessageResource(TypedDict):
     updated_at: Optional[str]
 
 
-class SendDirectMessageRequest(TypedDict):
+class _SendDirectMessageRequestRequired(TypedDict):
     device_id: int
-    text: NotRequired[str]
-    contact_id: NotRequired[Optional[int]]
-    phone: NotRequired[Optional[str]]
-    whatsapp_id: NotRequired[Optional[str]]
-    file: NotRequired[str]
-    file_type: NotRequired[Optional[Literal["image", "video", "audio", "document", "sticker"]]]
-    file_name: NotRequired[Optional[str]]
-    temporal_uuid: NotRequired[str]
-    local_id: NotRequired[Optional[str]]
-    note: NotRequired[bool]
-    mentions: NotRequired[Optional[List[int]]]
-    client_reference: NotRequired[Optional[str]]
+
+
+class SendDirectMessageRequest(_SendDirectMessageRequestRequired, total=False):
+    text: str
+    contact_id: Optional[int]
+    phone: Optional[str]
+    whatsapp_id: Optional[str]
+    file: str
+    file_type: Optional[Literal["image", "video", "audio", "document", "sticker"]]
+    file_name: Optional[str]
+    temporal_uuid: str
+    local_id: Optional[str]
+    note: bool
+    mentions: Optional[List[int]]
+    client_reference: Optional[str]
 
 
 class MessagesSendDirectResponse(TypedDict):
     message: PublicMessageResource
 
 
-class SendWhatsappFormRequest(TypedDict):
+class _SendWhatsappFormRequestRequired(TypedDict):
     form_id: int
     device_id: int
-    text: NotRequired[str]
-    button_text: NotRequired[str]
-    client_reference: NotRequired[Optional[str]]
+
+
+class SendWhatsappFormRequest(_SendWhatsappFormRequestRequired, total=False):
+    text: str
+    button_text: str
+    client_reference: Optional[str]
 
 
 class MessagesSendFormResponse(TypedDict):
     message: PublicMessageResource
 
 
-class MessageResource(TypedDict):
+class _MessageResourceRequired(TypedDict):
     chat_id: str
     contact_id: Union[int, Literal[""]]
     content: Union[List[Any], Dict[str, Any], str]
@@ -776,33 +797,42 @@ class MessageResource(TypedDict):
     deleted_scope: Optional[str]
     deleted_by: Optional[int]
     edited_at: Optional[str]
-    poll_results: NotRequired[str]
-    event_rsvps: NotRequired[str]
-    form_answers: NotRequired[str]
     reactions: List[Any]
     file_original_name: Optional[str]
     client_reference: Optional[str]
-    scheduled: NotRequired[bool]
-    ai_assistant: NotRequired[MessageResourceAiAssistant]
+
+
+class MessageResource(_MessageResourceRequired, total=False):
+    poll_results: str
+    event_rsvps: str
+    form_answers: str
+    scheduled: bool
+    ai_assistant: MessageResourceAiAssistant
 
 
 class MessageResourceAiAssistant(TypedDict):
     name: str
 
 
-class StoreContactCardRequest(TypedDict):
+class _StoreContactCardRequestRequired(TypedDict):
     device_id: int
     contact_card_ids: List[int]
-    client_reference: NotRequired[Optional[str]]
+
+
+class StoreContactCardRequest(_StoreContactCardRequestRequired, total=False):
+    client_reference: Optional[str]
 
 
 class MessagesSendContactCardResponse(TypedDict):
     messages: List[PublicMessageResource]
 
 
-class ForwardMessageRequest(TypedDict):
+class _ForwardMessageRequestRequired(TypedDict):
     targets: List[ForwardMessageRequestTargetsItem]
-    client_reference: NotRequired[Optional[str]]
+
+
+class ForwardMessageRequest(_ForwardMessageRequestRequired, total=False):
+    client_reference: Optional[str]
 
 
 class ForwardMessageRequestTargetsItem(TypedDict):
@@ -861,17 +891,20 @@ class TemplatesSyncResponse(TypedDict):
     status: Literal["in_progress", "completed"]
 
 
-class StoreMessageTemplateRequest(TypedDict):
+class _StoreMessageTemplateRequestRequired(TypedDict):
     name: str
     language_code: Literal["af", "sq", "ar", "ar_EG", "ar_AE", "ar_LB", "ar_MA", "ar_QA", "az", "be_BY", "bn", "bn_IN", "bg", "ca", "zh_CN", "zh_HK", "zh_TW", "hr", "cs", "da", "prs_AF", "nl", "nl_BE", "en", "en_GB", "en_US", "en_AE", "en_AU", "en_CA", "en_GH", "en_IE", "en_IN", "en_JM", "en_MY", "en_NZ", "en_QA", "en_SG", "en_UG", "en_ZA", "et", "fil", "fi", "fr", "fr_BE", "fr_CA", "fr_CH", "fr_CI", "fr_MA", "ka", "de", "de_AT", "de_CH", "el", "gu", "ha", "he", "hi", "hu", "id", "ga", "it", "ja", "kn", "kk", "rw_RW", "ko", "ky_KG", "lo", "lv", "lt", "mk", "ms", "ml", "mr", "nb", "ps_AF", "fa", "pl", "pt_BR", "pt_PT", "pa", "ro", "ru", "sr", "si_LK", "sk", "sl", "es", "es_AR", "es_CL", "es_CO", "es_CR", "es_DO", "es_EC", "es_HN", "es_MX", "es_PA", "es_PE", "es_ES", "es_UY", "sw", "sv", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "zu"]
     category: Literal["UTILITY", "MARKETING", "AUTHENTICATION"]
     type: Literal["text", "image", "document", "video", "location", "default"]
-    header: NotRequired[Optional[str]]
-    file: NotRequired[str]
     body: str
-    params: NotRequired[Optional[List[str]]]
-    footer: NotRequired[Optional[str]]
-    buttons: NotRequired[Optional[List[StoreMessageTemplateRequestButtonsItem]]]
+
+
+class StoreMessageTemplateRequest(_StoreMessageTemplateRequestRequired, total=False):
+    header: Optional[str]
+    file: str
+    params: Optional[List[str]]
+    footer: Optional[str]
+    buttons: Optional[List[StoreMessageTemplateRequestButtonsItem]]
 
 
 class StoreMessageTemplateRequestButtonsItem(TypedDict, total=False):
@@ -888,16 +921,19 @@ class StoreMessageTemplateRequestButtonsItem2(TypedDict, total=False):
     phone_number: str
 
 
-class UpdateMessageTemplateRequest(TypedDict):
+class _UpdateMessageTemplateRequestRequired(TypedDict):
     device_id: int
     category: Literal["UTILITY", "MARKETING", "AUTHENTICATION"]
     type: Literal["text", "image", "document", "video", "location", "default"]
-    header: NotRequired[Optional[str]]
-    file: NotRequired[str]
     body: str
-    params: NotRequired[Optional[List[str]]]
-    footer: NotRequired[Optional[str]]
-    buttons: NotRequired[Optional[List[UpdateMessageTemplateRequestButtonsItem]]]
+
+
+class UpdateMessageTemplateRequest(_UpdateMessageTemplateRequestRequired, total=False):
+    header: Optional[str]
+    file: str
+    params: Optional[List[str]]
+    footer: Optional[str]
+    buttons: Optional[List[UpdateMessageTemplateRequestButtonsItem]]
 
 
 class UpdateMessageTemplateRequestButtonsItem(TypedDict, total=False):
@@ -922,7 +958,7 @@ class TemplatesSendResponse(TypedDict):
     message: PublicMessageResource
 
 
-class WhatsappFormResource(TypedDict):
+class _WhatsappFormResourceRequired(TypedDict):
     id: int
     family_id: int
     name: str
@@ -930,23 +966,26 @@ class WhatsappFormResource(TypedDict):
     category: str
     status: str
     version: int
-    definition: NotRequired[List[Any]]
-    fields: NotRequired[Optional[List[Any]]]
-    mapping: NotRequired[Optional[List[Any]]]
-    tag_rules: NotRequired[Optional[List[Any]]]
     has_endpoint: bool
     first_screen: Optional[str]
     first_screen_dynamic: bool
     lint_errors_count: int
-    draft_id: NotRequired[int]
-    draft_version: NotRequired[int]
-    sends: NotRequired[int]
-    responses: NotRequired[int]
     meta_flow_id: Optional[str]
-    flow_json: NotRequired[Optional[List[Any]]]
-    validation_errors: NotRequired[Optional[List[Any]]]
     published_at: Optional[str]
     updated_at: Optional[str]
+
+
+class WhatsappFormResource(_WhatsappFormResourceRequired, total=False):
+    definition: List[Any]
+    fields: Optional[List[Any]]
+    mapping: Optional[List[Any]]
+    tag_rules: Optional[List[Any]]
+    draft_id: int
+    draft_version: int
+    sends: int
+    responses: int
+    flow_json: Optional[List[Any]]
+    validation_errors: Optional[List[Any]]
 
 
 class FormsTemplatesResponse(TypedDict):
@@ -965,10 +1004,13 @@ class WhatsappFormTemplate(TypedDict):
     updated_at: Optional[str]
 
 
-class StoreWhatsappFormRequest(TypedDict):
+class _StoreWhatsappFormRequestRequired(TypedDict):
     device_id: int
-    device_ids: NotRequired[List[int]]
     template_key: str
+
+
+class StoreWhatsappFormRequest(_StoreWhatsappFormRequestRequired, total=False):
+    device_ids: List[int]
 
 
 class FormsCreateResponse(TypedDict):
@@ -1016,34 +1058,43 @@ class WhatsappForm(TypedDict):
     actor_user_id: Optional[int]
 
 
-class SaveWhatsappFormRequest(TypedDict):
-    name: NotRequired[str]
+class _SaveWhatsappFormRequestRequired(TypedDict):
     definition: SaveWhatsappFormRequestDefinition
-    expected_updated_at: NotRequired[Optional[str]]
+
+
+class SaveWhatsappFormRequest(_SaveWhatsappFormRequestRequired, total=False):
+    name: str
+    expected_updated_at: Optional[str]
 
 
 class SaveWhatsappFormRequestDefinition(TypedDict):
     screens: List[SaveWhatsappFormRequestDefinitionScreensItem]
 
 
-class SaveWhatsappFormRequestDefinitionScreensItem(TypedDict):
+class _SaveWhatsappFormRequestDefinitionScreensItemRequired(TypedDict):
     id: str
-    title: NotRequired[Optional[str]]
-    cta: NotRequired[Optional[str]]
-    next: NotRequired[Optional[str]]
-    routes: NotRequired[Optional[Dict[str, Any]]]
-    items: NotRequired[List[SaveWhatsappFormRequestDefinitionScreensItemItemsItem]]
 
 
-class SaveWhatsappFormRequestDefinitionScreensItemItemsItem(TypedDict):
+class SaveWhatsappFormRequestDefinitionScreensItem(_SaveWhatsappFormRequestDefinitionScreensItemRequired, total=False):
+    title: Optional[str]
+    cta: Optional[str]
+    next: Optional[str]
+    routes: Optional[Dict[str, Any]]
+    items: List[SaveWhatsappFormRequestDefinitionScreensItemItemsItem]
+
+
+class _SaveWhatsappFormRequestDefinitionScreensItemItemsItemRequired(TypedDict):
     type: str
-    name: NotRequired[str]
-    id: NotRequired[Optional[str]]
-    label: NotRequired[Optional[str]]
-    url: NotRequired[Optional[str]]
-    src: NotRequired[Optional[str]]
-    options: NotRequired[Optional[List[SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem]]]
-    tagMap: NotRequired[Optional[List[Optional[str]]]]
+
+
+class SaveWhatsappFormRequestDefinitionScreensItemItemsItem(_SaveWhatsappFormRequestDefinitionScreensItemItemsItemRequired, total=False):
+    name: str
+    id: Optional[str]
+    label: Optional[str]
+    url: Optional[str]
+    src: Optional[str]
+    options: Optional[List[SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem]]
+    tagMap: Optional[List[Optional[str]]]
 
 
 class SaveWhatsappFormRequestDefinitionScreensItemItemsItemOptionsItem(TypedDict, total=False):
@@ -1055,24 +1106,30 @@ class SaveWhatsappFormRequestDefinition2(TypedDict):
     screens: List[SaveWhatsappFormRequestDefinition2ScreensItem]
 
 
-class SaveWhatsappFormRequestDefinition2ScreensItem(TypedDict):
+class _SaveWhatsappFormRequestDefinition2ScreensItemRequired(TypedDict):
     id: str
-    title: NotRequired[Optional[str]]
-    cta: NotRequired[Optional[str]]
-    next: NotRequired[Optional[str]]
-    routes: NotRequired[Optional[Dict[str, Any]]]
-    items: NotRequired[List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItem]]
 
 
-class SaveWhatsappFormRequestDefinition2ScreensItemItemsItem(TypedDict):
+class SaveWhatsappFormRequestDefinition2ScreensItem(_SaveWhatsappFormRequestDefinition2ScreensItemRequired, total=False):
+    title: Optional[str]
+    cta: Optional[str]
+    next: Optional[str]
+    routes: Optional[Dict[str, Any]]
+    items: List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItem]
+
+
+class _SaveWhatsappFormRequestDefinition2ScreensItemItemsItemRequired(TypedDict):
     type: str
-    name: NotRequired[str]
-    id: NotRequired[Optional[str]]
-    label: NotRequired[Optional[str]]
-    url: NotRequired[Optional[str]]
-    src: NotRequired[Optional[str]]
-    options: NotRequired[Optional[List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem]]]
-    tagMap: NotRequired[Optional[List[Optional[str]]]]
+
+
+class SaveWhatsappFormRequestDefinition2ScreensItemItemsItem(_SaveWhatsappFormRequestDefinition2ScreensItemItemsItemRequired, total=False):
+    name: str
+    id: Optional[str]
+    label: Optional[str]
+    url: Optional[str]
+    src: Optional[str]
+    options: Optional[List[SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem]]
+    tagMap: Optional[List[Optional[str]]]
 
 
 class SaveWhatsappFormRequestDefinition2ScreensItemItemsItemOptionsItem(TypedDict, total=False):
@@ -1296,13 +1353,16 @@ class TagResource(TypedDict):
     contact_count: Union[str, int]
 
 
-class CustomFieldResource(TypedDict):
+class _CustomFieldResourceRequired(TypedDict):
     id: int
     name: str
     type: Literal[0, 1, 2, 3, 4]
     description: Optional[str]
-    contact_count: NotRequired[int]
     created_at: Optional[str]
+
+
+class CustomFieldResource(_CustomFieldResourceRequired, total=False):
+    contact_count: int
 
 
 class GroupResource(TypedDict):
@@ -1448,13 +1508,16 @@ class ActionGroupResourceVariant2(TypedDict):
     groups: Union[List[Any], List[str]]
 
 
-class SendGroupMessageRequest(TypedDict):
+class _SendGroupMessageRequestRequired(TypedDict):
     device_id: int
     type: Literal["text", "image", "video", "audio", "document"]
-    text: NotRequired[str]
-    media_url: NotRequired[str]
-    caption: NotRequired[str]
-    file_name: NotRequired[str]
+
+
+class SendGroupMessageRequest(_SendGroupMessageRequestRequired, total=False):
+    text: str
+    media_url: str
+    caption: str
+    file_name: str
 
 
 class ApiGroupActionAcceptedResource(TypedDict):
@@ -1605,12 +1668,15 @@ class DeviceResourceCapabilitiesGroups(TypedDict):
     join_requests: Union[bool, Literal["list", "list_and_decide"]]
 
 
-class StoreDeviceRequest(TypedDict):
+class _StoreDeviceRequestRequired(TypedDict):
     connection: Literal["qr"]
-    alias: NotRequired[Optional[str]]
-    external_reference: NotRequired[Optional[str]]
-    same_number_as: NotRequired[Optional[int]]
-    country: NotRequired[Optional[str]]
+
+
+class StoreDeviceRequest(_StoreDeviceRequestRequired, total=False):
+    alias: Optional[str]
+    external_reference: Optional[str]
+    same_number_as: Optional[int]
+    country: Optional[str]
 
 
 class DevicesCreateResponse(TypedDict):
@@ -1652,16 +1718,19 @@ class DeviceConnectionEventResource(TypedDict):
     created_at: str
 
 
-class StoreConnectLinkRequest(TypedDict):
+class _StoreConnectLinkRequestRequired(TypedDict):
     type: Literal["meta", "qr"]
-    allowed_connection_types: NotRequired[List[Literal["coexistence", "dedicated"]]]
-    provision_us_number: NotRequired[bool]
-    device_id: NotRequired[Optional[int]]
-    same_number_as: NotRequired[Optional[int]]
-    country: NotRequired[Optional[str]]
-    external_reference: NotRequired[Optional[str]]
-    return_url: NotRequired[Optional[str]]
-    expires_in_minutes: NotRequired[Optional[int]]
+
+
+class StoreConnectLinkRequest(_StoreConnectLinkRequestRequired, total=False):
+    allowed_connection_types: List[Literal["coexistence", "dedicated"]]
+    provision_us_number: bool
+    device_id: Optional[int]
+    same_number_as: Optional[int]
+    country: Optional[str]
+    external_reference: Optional[str]
+    return_url: Optional[str]
+    expires_in_minutes: Optional[int]
 
 
 class ConnectLinksCreateResponse(TypedDict):
@@ -1702,11 +1771,10 @@ class WebhooksEventsResponseMeta(TypedDict):
     signature_format: Literal["t=<unix>,v1=<hex hmac-sha256 de \"<t>.<cuerpo crudo>\" con el secreto del endpoint>"]
 
 
-class WebhookSubscriptionResource(TypedDict):
+class _WebhookSubscriptionResourceRequired(TypedDict):
     id: str
     url: str
     description: Optional[str]
-    events: NotRequired[List[str]]
     filters: Optional[Dict[str, Any]]
     status: str
     disabled_reason: Optional[str]
@@ -1716,6 +1784,10 @@ class WebhookSubscriptionResource(TypedDict):
     created_at: Optional[str]
     updated_at: Optional[str]
     migration: Optional[Dict[str, Any]]
+
+
+class WebhookSubscriptionResource(_WebhookSubscriptionResourceRequired, total=False):
+    events: List[str]
 
 
 class WebhooksListResponseVariant2(TypedDict):
@@ -1740,11 +1812,14 @@ class WebhooksListResponseVariant2MetaLinksItem(TypedDict):
     active: bool
 
 
-class StoreWebhookSubscriptionRequest(TypedDict):
+class _StoreWebhookSubscriptionRequestRequired(TypedDict):
     url: str
-    description: NotRequired[Optional[str]]
     events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
-    filters: NotRequired[StoreWebhookSubscriptionRequestFilters]
+
+
+class StoreWebhookSubscriptionRequest(_StoreWebhookSubscriptionRequestRequired, total=False):
+    description: Optional[str]
+    filters: StoreWebhookSubscriptionRequestFilters
 
 
 class StoreWebhookSubscriptionRequestFilters(TypedDict, total=False):
@@ -1755,11 +1830,10 @@ class StoreWebhookSubscriptionRequestFilters2(TypedDict, total=False):
     campaign_ids: Optional[List[str]]
 
 
-class WebhookSubscriptionCreatedResource(TypedDict):
+class _WebhookSubscriptionCreatedResourceRequired(TypedDict):
     id: str
     url: str
     description: Optional[str]
-    events: NotRequired[List[str]]
     filters: Optional[Dict[str, Any]]
     status: str
     disabled_reason: Optional[str]
@@ -1773,12 +1847,19 @@ class WebhookSubscriptionCreatedResource(TypedDict):
     secret_notice: Literal["Guarda este secreto ahora: es la única vez que se muestra. Con él validas la firma del header de cada entrega."]
 
 
-class UpdateWebhookSubscriptionRequest(TypedDict):
+class WebhookSubscriptionCreatedResource(_WebhookSubscriptionCreatedResourceRequired, total=False):
+    events: List[str]
+
+
+class _UpdateWebhookSubscriptionRequestRequired(TypedDict):
     url: str
-    description: NotRequired[Optional[str]]
     events: List[Literal["device.disconnected", "device.connected", "device.deleted", "device.health_changed", "device.quality_changed", "device.messaging_limit_changed", "device.display_name_reviewed", "billing.payment_failed", "billing.upcoming_charge", "subscription.trial_ending", "subscription.reactivated", "subscription.cancellation_confirmed", "subscription.dormant_ending", "mac.usage_80", "mac.usage_100", "mac.expiring", "account.blocked", "message.received", "flow.completed", "broadcast.finished", "contact.stage_changed", "message.status_changed", "conversation.closed", "conversation.assigned", "contact.tag_added", "broadcast.paused", "contact.tag_removed", "contact.created", "template.status_changed", "flow.failed", "whatsapp_form.completed", "contact.updated", "message.reaction_failed", "group.created", "group.invite_link_down", "group.invite_link_renewed", "group_participant.joined", "group_participant.left", "scheduled_message.group_delivery_failed", "scheduled_message.response_received", "poll.voted", "pipeline.finished", "group.blocked", "group.recovered", "campaign.status_changed", "scheduled_message.finished", "group_action.failed", "daily_report.generated", "campaign.no_groups_available", "group.full", "group_action.completed", "group.message_received", "group.reaction_added", "group_join_request.created", "group_join_request.revoked"]]
-    filters: NotRequired[UpdateWebhookSubscriptionRequestFilters]
-    status: NotRequired[Literal["active", "paused"]]
+
+
+class UpdateWebhookSubscriptionRequest(_UpdateWebhookSubscriptionRequestRequired, total=False):
+    description: Optional[str]
+    filters: UpdateWebhookSubscriptionRequestFilters
+    status: Literal["active", "paused"]
 
 
 class UpdateWebhookSubscriptionRequestFilters(TypedDict, total=False):
@@ -1922,7 +2003,7 @@ class CampaignNoGroupsAvailableEvent(TypedDict):
     data: CampaignNoGroupsAvailableEventData
 
 
-CampaignStatusChangedEventData = TypedDict("CampaignStatusChangedEventData", {"campaign": "CampaignStatusChangedEventDataCampaign", "from": str, "to": str}, total=True)
+CampaignStatusChangedEventData = TypedDict("CampaignStatusChangedEventData", {"campaign": "CampaignStatusChangedEventDataCampaign", "from": str, "to": str, "workspace_id": Optional[int]}, total=True)
 
 
 class CampaignStatusChangedEventDataCampaign(TypedDict):
@@ -2809,7 +2890,7 @@ class MessageReceivedEventData(TypedDict):
 
 class MessageReceivedEventDataMessage(TypedDict):
     id: int
-    type: Literal["text", "image", "video", "document", "sticker", "contact", "audio", "note", "action", "invalid", "interactive", "location", "voice_call", "video_call", "event", "button", "template", "notification", "option_list", "template_button_reply", "poll", "whatsapp_form", "call_permission_request", "call_permission_reply", "request_contact_info"]
+    type: Union[Literal["text", "image", "video", "document", "sticker", "contact", "audio", "note", "action", "invalid", "interactive", "location", "voice_call", "video_call", "event", "button", "template", "notification", "option_list", "template_button_reply", "poll", "whatsapp_form", "call_permission_request", "call_permission_reply", "request_contact_info"], str]
     text: Optional[str]
     media: Optional[MessageReceivedEventDataMessageMedia]
 
@@ -2836,16 +2917,19 @@ class MessageReceivedEvent(TypedDict):
     data: MessageReceivedEventData
 
 
-class MessageStatusChangedEventData(TypedDict):
+class _MessageStatusChangedEventDataRequired(TypedDict):
     message_id: int
     contact_id: int
     device_id: Optional[int]
     status: Literal["sent", "delivered", "read", "failed"]
     previous_status: Optional[Literal["sent", "delivered", "read", "failed"]]
-    error: NotRequired[MessageStatusChangedEventDataError]
     occurred_at: str
     client_reference: Optional[str]
     workspace_id: Optional[int]
+
+
+class MessageStatusChangedEventData(_MessageStatusChangedEventDataRequired, total=False):
+    error: MessageStatusChangedEventDataError
 
 
 class MessageStatusChangedEventDataError(TypedDict):
@@ -3129,7 +3213,7 @@ class WhatsappFormCompletedEventDataForm(TypedDict):
 
 class WhatsappFormCompletedEventDataAnswersItem(TypedDict):
     key: str
-    label: Optional[str]
+    label: str
     value: Union[bool, float, str, List[str], None]
 
 

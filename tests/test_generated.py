@@ -3,14 +3,19 @@ does not need to touch this test."""
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import importlib.util
 import json
 import re
+import time
+import typing
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal, Optional
 
 from funnelchat import ROUTE_GROUPS, ROUTES, WEBHOOK_EVENTS, types
 from funnelchat.resources import Devices
+from funnelchat.webhooks import construct_event
 
 ROOT = Path(__file__).resolve().parent.parent
 SPEC = json.loads((ROOT / "spec" / "funnelchat.json").read_text("utf-8"))
@@ -63,6 +68,30 @@ def test_group_events_carry_the_message_uid_production_sends() -> None:
     for name in ("GroupMessageReceivedEventDataMessage", "GroupReactionAddedEventDataMessage"):
         fields = getattr(types, name).__annotations__
         assert "uid" in fields and "id" not in fields, name
+
+
+def test_every_type_resolves_at_runtime() -> None:
+    # pydantic and FastAPI read a TypedDict with typing.get_type_hints, on every Python the SDK supports.
+    classes = [value for value in vars(types).values() if isinstance(value, type) and issubclass(value, dict) and value is not dict]
+    assert len(classes) > 300
+    for cls in classes:
+        typing.get_type_hints(cls)
+
+
+def test_events_type_what_production_sends() -> None:
+    for name in ("GroupJoinRequestCreatedEventDataParticipant", "GroupJoinRequestRevokedEventDataParticipant"):
+        participant = typing.get_type_hints(getattr(types, name))
+        assert participant["identity"] is str and participant["name"] == Optional[str], name
+        assert participant["identity_type"] == Literal["phone", "whatsapp_user"], name
+    answer = typing.get_type_hints(types.WhatsappFormCompletedEventDataAnswersItem)
+    assert answer["label"] is str and type(None) in typing.get_args(answer["value"])
+    # A type of message the spec does not list yet is a string too, and the event is read as it comes.
+    known, other = typing.get_args(typing.get_type_hints(types.MessageReceivedEventDataMessage)["type"])
+    assert "text" in typing.get_args(known) and other is str
+    body = json.dumps({"id": "evt_1", "type": "message.received", "version": 1, "occurred_at": "2026-11-13T12:00:00Z", "data": {"message": {"id": 1, "type": "a_new_kind", "text": None, "media": None}}})
+    t = int(time.time())
+    header = f"t={t},v1={hmac.new(b'whsec_test', f'{t}.{body}'.encode(), hashlib.sha256).hexdigest()}"
+    assert construct_event(body, header, "whsec_test")["data"]["message"]["type"] == "a_new_kind"
 
 
 def test_portal_groups_read_the_category_as_the_spec_gives_it() -> None:

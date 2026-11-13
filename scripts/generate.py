@@ -9,7 +9,7 @@
                                                   funnelchat-node, record where it came from in
                                                   spec/procedencia.json, then regenerate
     python scripts/generate.py --check            regenerate in memory and fail if a generated file,
-                                                  or the generated block of README.md, differs
+                                                  or a generated block of README.md, differs
 
 The spec is the one the developer portal publishes (https://developers-portal.funnelchat.app/specs/funnelchat.json):
 every function an API key can use, and nothing closed to keys. The SDK types only what it brings.
@@ -28,7 +28,8 @@ Steps:
      here as is) into the spec. The layer corrects what the spec publishes and never adds to it: an
      operation or an event the spec does not publish is not typed. Every entry applies only while
      the spec still lacks it, or still says what the entry corrects, and the report lists the
-     entries a new spec made obsolete.
+     entries a new spec made obsolete. Then the event fields of PENDING_EVENT_FIELDS, below, by
+     the same rule.
   3. src/funnelchat/_routes.py   every operation (method, path, area, permission, its group and the
                                  category of the group as the portal shows them, whether it cannot
                                  be undone), the portal's groups and the event catalog. The SDK
@@ -42,10 +43,13 @@ Steps:
                                  from its operation. A method whose operation is no longer in the
                                  spec is left out, and the report says which one.
   6. README.md                   the block between README_START and README_END: how many operations
-                                 and events the SDK covers, and the portal's groups by category.
+                                 and events the SDK covers, and the portal's groups by category; and
+                                 the one between README_IMPORT_START and README_IMPORT_END: the
+                                 commands that import the spec, with the portal's version that
+                                 spec/procedencia.json records.
 
 Regenerating with a new spec never needs anything edited by hand. Nothing in the generated files
-(or in that block of the README) is edited by hand, and they name a permission only as the panel
+(or in those blocks of the README) is edited by hand, and they name a permission only as the panel
 does (**WhatsApp numbers → View**), never by its literal, except in the `permission` of the route
 table: the generation fails if they do.
 """
@@ -406,7 +410,7 @@ def merge_pending(spec: Dict[str, Any], pending: Dict[str, Any]) -> Tuple[Dict[s
             report["superseded"].append(label)
             continue
         del merged["webhooks"][current]
-        merged["webhooks"][event_type] = item
+        merged["webhooks"][event_type] = copy.deepcopy(item)
         report["applied"].append(label)
 
     return merged, report
@@ -666,12 +670,17 @@ class Types:
         if not fields:
             return f"{name} = Dict[str, Any]"
         if all(is_identifier(key) for key, _, _ in fields):
-            total = any(req for _, _, req in fields)
-            head = f"class {name}(TypedDict):" if total else f"class {name}(TypedDict, total=False):"
-            lines = [head]
-            for key, type_text, req in fields:
-                lines.append(f"    {key}: {type_text if req or not total else f'NotRequired[{type_text}]'}")
-            return "\n".join(lines)
+            required = [f"    {key}: {type_text}" for key, type_text, req in fields if req]
+            optional = [f"    {key}: {type_text}" for key, type_text, req in fields if not req]
+            if not optional:
+                return "\n".join([f"class {name}(TypedDict):", *required])
+            if not required:
+                return "\n".join([f"class {name}(TypedDict, total=False):", *optional])
+            # Required and optional keys: the required ones in a private base, so that every type
+            # resolves at runtime with `typing.get_type_hints` (pydantic, FastAPI) on Python 3.9,
+            # where `typing` has no `NotRequired`.
+            base = f"_{name}Required"
+            return "\n".join([f"class {base}(TypedDict):", *required, "", "", f"class {name}({base}, total=False):", *optional])
         # A key that is not a Python name: the functional syntax, whose values run at import time.
         total = all(req for _, _, req in fields)
         items = ", ".join(f"{json.dumps(key, ensure_ascii=False)}: {quote_names(t)}" for key, t, _ in fields)
@@ -686,6 +695,9 @@ class Types:
         if "const" in schema:
             return self.literal([schema["const"]])
         if isinstance(schema.get("enum"), list):
+            if schema.get(OPEN_ENUM) and all(isinstance(v, str) for v in schema["enum"]):
+                # Values the API may add to: the known ones, for the editor, and any other string.
+                return f"Union[{self.literal(schema['enum'])}, str]"
             return self.literal(schema["enum"])
         if "allOf" in schema:
             if len(schema["allOf"]) == 1 and not schema.get("properties"):
@@ -744,7 +756,8 @@ class Types:
         return union(parts) if parts else "None"
 
     # -- events: types inferred from an example, with the schema as a hint
-    def from_example(self, value: Any, hint: Any, context: str) -> str:
+    def from_example(self, value: Any, hint: Any, context: str, extra: Optional[Dict[str, Tuple[str, bool]]] = None) -> str:
+        """`extra`: fields of the top object that take this type even when the example shows them."""
         hint = self.resolve(hint) if isinstance(hint, dict) else None
         if hint and ("enum" in hint or "const" in hint):
             return self.render(hint, context, quote=False)
@@ -774,6 +787,12 @@ class Types:
             for k, prop in hint_props.items():
                 if k not in value:
                     fields.append((k, self.render(prop, name + pascal(k), quote=False), False))
+            for key, (type_text, required) in (extra or {}).items():
+                at = next((i for i, field in enumerate(fields) if field[0] == key), None)
+                if at is None:
+                    fields.append((key, type_text, required))
+                else:
+                    fields[at] = (key, type_text, required)
             self.blocks[name] = self.render_typed_dict(name, fields)
             return name
         return "Any"
@@ -1019,7 +1038,7 @@ def generate_routes(rows: List[Dict[str, Any]], group_list: List[Dict[str, Any]]
     return "\n".join(lines)
 
 
-# ---- Step 6: the generated block of the README ------------------------------------------------------
+# ---- Step 6: the generated blocks of the README -----------------------------------------------------
 
 README_START = "<!-- generated:functions — written by scripts/generate.py; do not edit by hand -->"
 README_END = "<!-- /generated:functions -->"
@@ -1060,12 +1079,33 @@ def readme_block(group_list: List[Dict[str, Any]], operations: int, events: int,
     return "\n".join(lines)
 
 
-def generate_readme(current: str, block: str) -> str:
-    """The README with its generated block replaced; fails if the markers are missing."""
-    start, end = current.find(README_START), current.find(README_END)
+README_IMPORT_START = "<!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->"
+README_IMPORT_END = "<!-- /generated:import -->"
+PUBLISHED_SPEC_URL = "https://developers-portal.funnelchat.app/specs/funnelchat.json"
+
+
+def import_block(provenance: Dict[str, Any]) -> str:
+    """The commands that import the spec, with the URL and the portal's version spec/procedencia.json
+    records, so the README never names another version than the one in spec/."""
+    source = provenance.get("source") or {}
+    url = source.get("url") or PUBLISHED_SPEC_URL
+    version = source.get("portal_version") or "<version>"
+    return "\n".join(
+        [
+            "```bash",
+            f"curl -fsSo /tmp/funnelchat.json {url}",
+            f"python scripts/generate.py --spec /tmp/funnelchat.json --source url={url} --source portal_version={version}",
+            "```",
+        ]
+    )
+
+
+def generate_readme(current: str, block: str, start_marker: str = README_START, end_marker: str = README_END) -> str:
+    """The README with a generated block replaced; fails if its markers are missing."""
+    start, end = current.find(start_marker), current.find(end_marker)
     if start == -1 or end == -1 or end < start:
-        raise GenerationError(f"README.md lacks the generated block: put {README_START} and {README_END} where it goes.")
-    return f"{current[: start + len(README_START)]}\n{block}\n{current[end:]}"
+        raise GenerationError(f"README.md lacks a generated block: put {start_marker} and {end_marker} where it goes.")
+    return f"{current[: start + len(start_marker)]}\n{block}\n{current[end:]}"
 
 
 # ---- Steps 4 and 5: types and resources -----------------------------------------------------------
@@ -1078,6 +1118,56 @@ def generate_readme(current: str, block: str) -> str:
 # no schema. `None` only for an account with no workspace at all. When the spec describes it in an
 # event's schema, it stops being added there.
 PENDING_COMMON_EVENT_DATA = {"workspace_id": ("Optional[int]", True)}
+
+# A schema with this key and an `enum` of strings is typed as its values or any other string: a list
+# the API adds to without a new version. OpenAPI has no way to say it, so only PENDING_EVENT_FIELDS
+# sets it, in the merged spec in memory.
+OPEN_ENUM = "x-fc-open-enum"
+
+# Fields of an event where production sends otherwise than the spec and spec/pending.json say, read in
+# the code that emits it. `at` is a JSON Pointer into the schema of the event's body; each entry
+# replaces the keys of `schema` there only while that schema still matches `while`, and generation
+# lists the entries a new spec or a new pending layer made unnecessary, so they can be deleted.
+PENDING_EVENT_FIELDS: Tuple[Dict[str, Any], ...] = (
+    {
+        # A question without a label sends its name: `label` is never null. `value` can be.
+        "event": "whatsapp_form.completed",
+        "at": "/properties/data/properties/answers/items/properties/label",
+        "while": {"type": ["string", "null"]},
+        "schema": {"type": "string"},
+    },
+    {
+        # WhatsApp brings new kinds of message: one the spec does not list yet arrives as it is.
+        "event": "message.received",
+        "at": "/properties/data/properties/message/properties/type",
+        "while": {"type": "string", OPEN_ENUM: None},
+        "schema": {OPEN_ENUM: True},
+    },
+)
+
+
+def apply_event_fields(merged: Dict[str, Any]) -> Dict[str, List[str]]:
+    """Applies PENDING_EVENT_FIELDS to the events of the merged spec, in place."""
+    report: Dict[str, List[str]] = {"applied": [], "superseded": [], "missing": []}
+    for entry in PENDING_EVENT_FIELDS:
+        label = f"webhook {entry['event']} {entry['at']}"
+        bodies = [
+            pointer(item, "/post/requestBody/content/application~1json/schema")
+            for key, item in merged.get("webhooks", {}).items()
+            if event_type_of_key(key) == entry["event"]
+        ]
+        targets = [target for target in (pointer(body, entry["at"]) for body in bodies if isinstance(body, dict)) if isinstance(target, dict)]
+        if not targets:
+            report["missing"].append(label)
+            continue
+        current = [target for target in targets if matches(target, entry["while"])]
+        if not current:
+            report["superseded"].append(label)
+            continue
+        for target in current:
+            target.update(copy.deepcopy(entry["schema"]))
+        report["applied"].append(label)
+    return report
 
 
 def wrap_doc(text: str, indent: str, width: int = 100) -> List[str]:
@@ -1336,14 +1426,8 @@ def generate_types_and_resources(
         if explicit:
             data_type = types.typed_dict(types.claim(data_name, exact=True), schema, claimed=True, extra=PENDING_COMMON_EVENT_DATA)
         elif isinstance(example, dict):
-            data_type = types.from_example(example, schema, data_name)
-            block = types.blocks.get(data_type, "")
-            if block.startswith("class "):
-                # A common field takes its own type even when the example shows it (`37` is not `None`).
-                for key, (type_text, _) in PENDING_COMMON_EVENT_DATA.items():
-                    line = re.compile(rf"^    {key}: .*$", re.M)
-                    block = line.sub(f"    {key}: {type_text}", block) if line.search(block) else f"{block}\n    {key}: {type_text}"
-                types.blocks[data_type] = block
+            # A common field takes its own type even when the example shows it (`37` is not `None`).
+            data_type = types.from_example(example, schema, data_name, extra=PENDING_COMMON_EVENT_DATA)
         elif schema:
             data_type = types.render(schema, data_name, quote=False)
         else:
@@ -1371,10 +1455,7 @@ def generate_types_and_resources(
         "",
         "from __future__ import annotations",
         "",
-        "from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypedDict, Union",
-        "",
-        "if TYPE_CHECKING:",
-        "    from typing_extensions import NotRequired",
+        "from typing import Any, Dict, List, Literal, Optional, TypedDict, Union",
         "",
         "__all__ = [",
         *[f'    "{n}",' for n in sorted(names + ["WebhookEvent", "WebhookEventType"])],
@@ -1462,6 +1543,7 @@ def main(argv: List[str]) -> int:
     pending = json.loads(pending_bytes.decode("utf-8"))
     manifest = json.loads(RESOURCES_FILE.read_text("utf-8"))
     merged, report = merge_pending(spec, pending)
+    fields_report = apply_event_fields(merged)
     events = collect_events(merged)
     groups, group_warnings, catalog = portal_groups(spec)
     rows = route_rows(merged, groups)
@@ -1476,6 +1558,7 @@ def main(argv: List[str]) -> int:
     assert_permission_names(files)
     readme = README_FILE.read_text("utf-8")
     new_readme = generate_readme(readme, readme_block(group_list, len(rows), len(events), catalog))
+    new_readme = generate_readme(new_readme, import_block(provenance), README_IMPORT_START, README_IMPORT_END)
 
     print(f"spec: {len(rows)} operations, {len(events)} webhook events, {len(group_list)} groups.")
     categories = list(dict.fromkeys(g["category"] for g in group_list if g["category"]))
@@ -1501,6 +1584,15 @@ def main(argv: List[str]) -> int:
         print(f"warning: {len(report['missing'])} patches did not find their operation in the spec:", file=sys.stderr)
         for label in report["missing"]:
             print(f"  - {label}", file=sys.stderr)
+    print(f"event fields of scripts/generate.py: {len(fields_report['applied'])} entries applied.")
+    if fields_report["superseded"]:
+        print(f"the spec already says {len(fields_report['superseded'])} entries of PENDING_EVENT_FIELDS; they can be deleted from scripts/generate.py:")
+        for label in fields_report["superseded"]:
+            print(f"  - {label}")
+    if fields_report["missing"]:
+        print(f"warning: {len(fields_report['missing'])} entries of PENDING_EVENT_FIELDS did not find their field in the spec:", file=sys.stderr)
+        for label in fields_report["missing"]:
+            print(f"  - {label}", file=sys.stderr)
     if left_out:
         print(f"warning: the spec no longer publishes the operation of {len(left_out)} methods of spec/resources.json, so they were left out of the SDK; delete them from it:", file=sys.stderr)
         for label in left_out:
@@ -1511,17 +1603,17 @@ def main(argv: List[str]) -> int:
     if args.check:
         stale = [f"src/funnelchat/{name}" for name, content in files.items() if not (PACKAGE / name).exists() or (PACKAGE / name).read_text("utf-8") != content]
         if new_readme != readme:
-            stale.append("README.md (generated block)")
+            stale.append("README.md (generated blocks)")
         if stale:
             print(f"out of date: {', '.join(stale)}. Run `python scripts/generate.py`.", file=sys.stderr)
             return 1
-        print("src/funnelchat and the generated block of README.md are up to date.")
+        print("src/funnelchat and the generated blocks of README.md are up to date.")
         return 0
 
     for name, content in files.items():
         (PACKAGE / name).write_text(content, "utf-8")
     README_FILE.write_text(new_readme, "utf-8")
-    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files) + " and the generated block of README.md")
+    print("generated: " + ", ".join(f"src/funnelchat/{n}" for n in files) + " and the generated blocks of README.md")
     return 0
 
 

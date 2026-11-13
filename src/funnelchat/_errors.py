@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import time
 from email.utils import parsedate_to_datetime
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 __all__ = [
     "FunnelchatError",
@@ -44,6 +44,17 @@ __all__ = [
 
 class FunnelchatError(Exception):
     """Base class of every error raised by the SDK."""
+
+    def __reduce__(self) -> Tuple[Any, ...]:
+        # Pickled with its message and attributes, without calling `__init__` again (each subclass
+        # takes other arguments), so it crosses processes: Celery, multiprocessing, joblib.
+        return (_rebuild, (type(self), self.args, self.__dict__))
+
+
+def _rebuild(cls: type, args: Tuple[Any, ...], state: Dict[str, Any]) -> FunnelchatError:
+    error: FunnelchatError = cls.__new__(cls, *args)
+    error.__dict__.update(state)
+    return error
 
 
 class APIError(FunnelchatError):

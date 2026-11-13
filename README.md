@@ -382,9 +382,16 @@ client = Funnelchat(api_key="1|fc_live_sandbox", base_url="http://localhost:4010
 The types come from the spec the developer portal publishes (`spec/funnelchat.json`; where it came from, its URL, the portal's version and its `sha256`, in `spec/procedencia.json`). Where production answers otherwise than that spec says, or the spec shows an event only by an example or without one, a separate layer corrects it: `spec/pending.json`, kept in [funnelchat-node](https://github.com/Funnelchat20/funnelchat-node) and copied here unchanged, so both SDKs apply the same corrections. Generation applies each entry **only while the spec still says exactly what the entry corrects**, and each entry cites the production release it was read in:
 
 - what a send answers (`{"message": …}`, never `null`), the body of `devices.qr`, the items of `templates.list`, and the answers of `webhooks.update` and `groups.retrieve_action`;
-- the `data` of the events the spec shows only by an example, or without one, such as the `device.*` events, `message.received`, `message.status_changed` and the group events (`group.message_received` and `group.reaction_added` carry `message["uid"]`, as production sends them, though the published example says `id`).
+- the `data` of the events the spec shows only by an example, or without one, such as the `device.*` events, `message.received`, `message.status_changed` and the group events (`group.message_received` and `group.reaction_added` carry `message["uid"]`, as production sends them and the published example shows).
 
-The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number.
+The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message.
+
+### Upgrading from 0.4
+
+0.5.0 changes nothing at runtime, but two types of the events change, so a type checker may ask for a change:
+
+- `message["type"]` of `message.received` is one of the types the spec lists or any other `str`: WhatsApp brings new kinds of message before the SDK lists them. Handle one you do not know instead of matching every known type exhaustively.
+- The `label` of each answer of `whatsapp_form.completed` is `str`, never `None`.
 
 ### Upgrading from 0.1
 
@@ -402,23 +409,30 @@ The layer never adds an operation or an event the portal does not publish. The `
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e . pytest
-.venv/bin/python scripts/generate.py --check   # the generated files and the README block are up to date with spec/
+.venv/bin/python scripts/generate.py --check   # the generated files and the README blocks are up to date with spec/
 .venv/bin/python -m pytest                     # no network and no keys: a mocked transport
 python -m build                                # or: uv build
 ```
 
-Everything generated comes from one script, standard library only:
+Every pull request and every push to `main` runs these three checks on each Python the SDK supports, 3.9 to 3.14 (`.github/workflows/ci.yml`).
 
+Everything generated comes from one script, standard library only. The spec in `spec/` was imported with these two commands, which the generator writes with the portal's version that `spec/procedencia.json` records (for a newer spec, the version the portal shows):
+
+<!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->
 ```bash
 curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
-python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.13
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.14
+```
+<!-- /generated:import -->
+
+```bash
 python scripts/generate.py --pending <funnelchat-node>/spec/pending.json   # the pending layer, from funnelchat-node
 python scripts/generate.py                                                 # again from spec/, for example after editing spec/resources.json
 ```
 
 1. With `--spec`, it copies the spec to `spec/funnelchat.json` and writes `spec/procedencia.json`: where it came from and the `sha256` of the file. Generate only from the spec the portal publishes (`/specs/funnelchat.json`): it carries every function an API key can use, and nothing closed to keys (the portal's full unified spec also has internal routes and routes closed to keys). For a downloaded file, say on the command line where it came from (`--source url=…`) and the version of the portal that published it (`--source portal_version=…`); `--expect-sha256 <hex>` refuses a file whose `sha256` is not the one announced. From a checkout of a repository, its repository, branch and commit are read from git (`--source key=value` and `--domain <area>=<sha>@<branch>@<snapshot_at>` declare what git cannot say; those fields are marked as declared). With `--pending`, it copies the layer and records its checkout, commit and `sha256`.
 2. It applies `spec/pending.json` with the same rules as funnelchat-node: only while the spec still says what an entry corrects, never adding an operation or an event the spec does not publish. It lists the entries a new spec made unnecessary, and those it does not publish, so they can be deleted (in funnelchat-node).
-3. It writes `src/funnelchat/_routes.py` (every operation, with area, permission, group, category and whether it can be undone, and the groups of the portal: the SDK reads it to know which requests are sends), `src/funnelchat/types.py`, `src/funnelchat/resources.py` (each method of `spec/resources.json`, with its parameters and response from the spec) and the block of [Every function of the portal](#every-function-of-the-portal) in this README. The category of each group comes from the spec: `x-fc-categoria` on its `x-tagGroups` entry, named and linked as `x-fc-categorias` lists it.
+3. It writes `src/funnelchat/_routes.py` (every operation, with area, permission, group, category and whether it can be undone, and the groups of the portal: the SDK reads it to know which requests are sends), `src/funnelchat/types.py`, `src/funnelchat/resources.py` (each method of `spec/resources.json`, with its parameters and response from the spec) and two blocks of this README: [Every function of the portal](#every-function-of-the-portal) and the commands that import the spec. The category of each group comes from the spec: `x-fc-categoria` on its `x-tagGroups` entry, named and linked as `x-fc-categorias` lists it.
 
 **Regenerating never needs anything edited by hand.** A new operation of the spec is in `funnelchat.ROUTES`, called with `request` or `paginate`. A method of `spec/resources.json` whose operation the spec no longer publishes is left out of the SDK, and the generation says which one, so it can be deleted from there.
 
@@ -429,7 +443,7 @@ src/funnelchat/        the package; _routes.py, types.py and resources.py are ge
 tests/                 pytest, with httpx.MockTransport
 ```
 
-To release, push a `vX.Y.Z` tag on `main` matching `src/funnelchat/_version.py`; GitHub Actions publishes it to PyPI with Trusted Publishing (`.github/workflows/publish.yml`).
+To release, push a `vX.Y.Z` tag on a commit of `main`, matching `src/funnelchat/_version.py`. GitHub Actions runs the same checks and publishes it to PyPI with Trusted Publishing (`.github/workflows/publish.yml`); a tag whose commit is not on `main`, or that does not match the version, fails before publishing. A pre-release is `vX.Y.Z-rc.N` (or `-beta.N`, `-alpha.N`) with that same version in `_version.py`: PyPI takes it as a pre-release, which `pip install funnelchat` does not install unless asked (`pip install --pre funnelchat`).
 
 ## License
 
