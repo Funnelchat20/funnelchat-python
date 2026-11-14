@@ -332,7 +332,7 @@ Everything the SDK raises extends `FunnelchatError`. When the API answers with a
 | `errors` | In a validation `422` (`validation_failed`), the messages per field. |
 | `body` | The full decoded body. |
 
-Each status has its class: `BadRequestError` (400), `AuthenticationError` (401), `PermissionDeniedError` (403), `NotFoundError` (404), `ConflictError` (409), `UnsupportedMediaTypeError` (415), `UnprocessableEntityError` (422), `RateLimitError` (429) and `InternalServerError` (5xx). No response: `APIConnectionError`, and `APIConnectionTimeoutError` when it went over `timeout`. A status without its own class, such as `402 payment_required` (the account's payment is overdue) or `402 plan_cap_reached` (a cap of the plan, with `cap` and `used` in `body`), is a plain `APIError`.
+Each status has its class: `BadRequestError` (400), `AuthenticationError` (401), `PermissionDeniedError` (403), `NotFoundError` (404), `ConflictError` (409), `UnsupportedMediaTypeError` (415), `UnprocessableEntityError` (422), `RateLimitError` (429) and `InternalServerError` (5xx). No response: `APIConnectionError`, and `APIConnectionTimeoutError` when it went over `timeout`. A status without its own class, such as `402 payment_required` (the payment of the account or workspace is overdue) or `402 plan_cap_reached` (a cap of the plan, with `cap` and `used` in `body`), is a plain `APIError`.
 
 ```python
 from funnelchat import APIError, RateLimitError
@@ -345,7 +345,7 @@ except APIError as error:
     print(error.status, error.code, error.message, error.request_id)
 ```
 
-`ACCESS_ERROR_CODES` has the errors any route can answer (`401 unauthenticated`, `402 payment_required`, `403 permission_denied`, `403 route_not_available`, `403 workspace_deleted`, `404 not_found` (also for what belongs to another account), `422 validation_failed`, `429 rate_limited`, `429 daily_cap_exceeded`, `502 origin_unreachable`, `503 gate_unavailable`…). The `X-Request-Id` of a successful call is in `client.last_response.request_id`, and of each page in `page.request_id`.
+`ACCESS_ERROR_CODES` has the errors any route can answer (`401 unauthenticated`, `402 payment_required`, `403 permission_denied`, `403 route_not_available`, `403 workspace_deleted`, `404 not_found` (also for what belongs to another workspace), `422 validation_failed`, `429 rate_limited`, `429 daily_cap_exceeded`, `502 origin_unreachable`, `503 gate_unavailable`…). The `X-Request-Id` of a successful call is in `client.last_response.request_id`, and of each page in `page.request_id`.
 
 ### Retries
 
@@ -421,7 +421,7 @@ Everything generated comes from one script, standard library only. The spec in `
 <!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->
 ```bash
 curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
-python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.18
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.19
 ```
 <!-- /generated:import -->
 

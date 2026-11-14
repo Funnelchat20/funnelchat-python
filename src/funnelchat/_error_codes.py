@@ -31,7 +31,7 @@ __all__ = [
 #: every area answers with, as the spec the portal publishes (portal v0.6.16) declares them.
 ACCESS_ERROR_CODES: Dict[str, int] = {
     "unauthenticated": 401,  # missing or invalid API key
-    "payment_required": 402,  # the account's payment is overdue: pay it in the Funnelchat panel
+    "payment_required": 402,  # the payment of the account or workspace is overdue: pay it in the Funnelchat panel
     "not_found": 404,  # does not exist, or belongs to another account or workspace: both answer the same
     "conflict": 409,  # the current state does not allow it (the common code of a 409)
     "validation_failed": 422,  # the request is not valid; `errors` says which fields
@@ -87,7 +87,7 @@ NUMBER_ERROR_CODES: Dict[str, int] = {
     "numbers_not_included": 403,  # the plan does not include numbers
     "number_limit_reached": 403,  # every number of the plan is in use (`limit`, `used`, `pending_device_ids`)
     "connect_not_allowed": 403,  # the account cannot connect numbers now
-    "payment_required": 402,  # the account's payment is overdue (also in ACCESS_ERROR_CODES)
+    "payment_required": 402,  # the payment of the account or workspace is overdue (also in ACCESS_ERROR_CODES)
     "pending_number_exists": 409,  # a QR number is already waiting to be scanned; the body brings its `device_id`
     "qr_requires_coexistence": 422,  # (409 on `devices.qr()`) QR only on an official number in coexistence
     "method_already_present": 422,  # the number already has that method; the body brings its `device_id`

@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 19e91748ddfe19ee…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 3a5f39f1bd8d62c5…) + spec/pending.json + spec/resources.json.
 """
 
 from typing import NamedTuple, Optional, Tuple
