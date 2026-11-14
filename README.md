@@ -421,7 +421,7 @@ Everything generated comes from one script, standard library only. The spec in `
 <!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->
 ```bash
 curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
-python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.16
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.18
 ```
 <!-- /generated:import -->
 
