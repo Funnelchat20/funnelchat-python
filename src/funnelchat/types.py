@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 19e91748ddfe19ee…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 3a5f39f1bd8d62c5…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
