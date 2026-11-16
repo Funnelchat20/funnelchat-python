@@ -47,7 +47,7 @@ while True:
 
 if link["device_id"] is None:  # failed, expired or revoked
     raise SystemExit(f"Not connected: {link['status']} {link['error_code']}")
-device_id = link["device_id"]  # 9
+device_id = link["device_id"]  # dev_AFHtaOVjNBTEWzCuDrmxMPP
 ```
 
 A number you already connected is in `client.devices.list()`: `for device in client.devices.list(): print(device["id"], device["alias"], device["connected"])`. The `device.connected` webhook also says when a number is connected. More in [Connect a number](#connect-a-number).
@@ -235,7 +235,7 @@ With an official number, an approved template is the only way to write to a cont
 
 ```python
 template = next(t for t in client.templates.list() if t["available"])
-result = client.templates.send(device_id, str(template["id"]), phone="5491100000000", template_variables={"body": ["Lucía"]})
+result = client.templates.send(device_id, template["id"], phone="5491100000000", template_variables={"body": ["Lucía"]})
 ```
 
 `template_variables["body"]` fills the body variables in order. A new phone becomes a contact, as with `send_direct`.
@@ -386,6 +386,14 @@ The types come from the spec the developer portal publishes (`spec/funnelchat.js
 
 The layer never adds an operation or an event the portal does not publish. The `workspace_id` of every event, which is not OpenAPI, is added by the generator (`PENDING_COMMON_EVENT_DATA` in `scripts/generate.py`), as `Optional[int]` even where an example shows a number. The generator also corrects two fields of events that the spec and the layer type otherwise than production sends them (`PENDING_EVENT_FIELDS`), only while they still say it, and lists the ones a new spec made unnecessary: the `label` of each answer of `whatsapp_form.completed` is always a string (a question without a label sends its name), and `message["type"]` of `message.received` is one of the types the spec lists or any other string, since WhatsApp brings new kinds of message. A name of `funnelchat.types` that a published release exported and a newer spec no longer generates stays importable, as an alias of what the spec types now (`RETIRED_TYPES`).
 
+### Upgrading from 0.5
+
+0.6.0 follows the API's switch to opaque ids, with no transition. Every id that was an integer is now a text with a prefix by type, such as `ctc_ABsza6Ialu1BCUyPFZ8WJvV` (3 letters, `_` and 23 base62 characters); the portal's "Identificadores" page has the table of prefixes. An integer, or an id of another type, answers as non-existent (`404`). The `uid` of a group, the `uuid` of a campaign, the `uid` of a message, the ids of a WABA and the `workspace_id` stay as they were.
+
+- Ids are opaque text: store them as text (a `VARCHAR`, not an `INT`), and do not build them or convert them to numbers.
+- Every parameter, field and type that held an id is `str` now (`device_id`, `contact_id`, `tag_ids`, `custom_field_ids`, the `id` of each resource, the ids inside the events). Change what you annotate as `int`, and what you stored from before: an old integer id no longer finds anything.
+- Webhook events carry the new ids too, so compare them as text.
+
 ### Upgrading from 0.4
 
 0.5.0 changes nothing at runtime, but two types of the events change, so a type checker may ask for a change:
@@ -421,7 +429,7 @@ Everything generated comes from one script, standard library only. The spec in `
 <!-- generated:import — written by scripts/generate.py from spec/procedencia.json; do not edit by hand -->
 ```bash
 curl -fsSo /tmp/funnelchat.json https://developers-portal.funnelchat.app/specs/funnelchat.json
-python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.6.19
+python scripts/generate.py --spec /tmp/funnelchat.json --source url=https://developers-portal.funnelchat.app/specs/funnelchat.json --source portal_version=v0.7.0
 ```
 <!-- /generated:import -->
 

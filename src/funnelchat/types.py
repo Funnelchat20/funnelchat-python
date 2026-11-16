@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 3a5f39f1bd8d62c5…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 fadcd73731cba99d…) + spec/pending.json + spec/resources.json.
 The shapes of what the API answers and of every webhook event, as TypedDicts: at runtime they
 are plain dicts (the decoded JSON), so `message["status"]` and `json.dumps(message)` just work.
 """
@@ -403,7 +403,7 @@ class _ContactsListQueryTagFiltersItemRequired(TypedDict):
 
 
 class ContactsListQueryTagFiltersItem(_ContactsListQueryTagFiltersItemRequired, total=False):
-    tag_ids: List[int]
+    tag_ids: List[str]
 
 
 class _ContactsListQueryCustomFieldFiltersItemRequired(TypedDict):
@@ -418,11 +418,11 @@ class ContactsListQueryCustomFieldFiltersItem(_ContactsListQueryCustomFieldFilte
     numeric_operator: Optional[Literal["lt", "eq", "gt"]]
     numeric_value: Optional[float]
     date_operator: Optional[Literal["lt", "gt", "eq", "period"]]
-    custom_field_ids: List[int]
+    custom_field_ids: List[str]
 
 
 class _ContactResourceRequired(TypedDict):
-    id: int
+    id: str
     name: str
     email: str
     phone: str
@@ -436,8 +436,8 @@ class _ContactResourceRequired(TypedDict):
     active_conversation: int
     favorite: int
     unread_messages: int
-    device_id: Optional[int]
-    adviser_id: Optional[int]
+    device_id: Optional[str]
+    adviser_id: Optional[str]
     paused_at: Optional[str]
     mac_date: Optional[str]
     ai_assistant_name: Optional[str]
@@ -459,7 +459,7 @@ class ContactResource(_ContactResourceRequired, total=False):
 
 
 class ContactCustomFieldResource(TypedDict):
-    id: int
+    id: str
     name: str
     description: str
     type: Literal[0, 1, 2, 3, 4]
@@ -495,17 +495,17 @@ class StoreContactRequest(TypedDict, total=False):
     name: Optional[str]
     email: Optional[str]
     image: Optional[str]
-    deviceId: Optional[int]
+    deviceId: Optional[str]
     custom_fields: List[StoreContactRequestCustomFieldsItem]
 
 
 class StoreContactRequestCustomFieldsItem(TypedDict):
-    id: int
+    id: str
     value: str
 
 
 class StoreContactRequestCustomFieldsItem2(TypedDict):
-    id: int
+    id: str
     value: str
 
 
@@ -520,12 +520,12 @@ class UpdateOrCreateContactRequest(_UpdateOrCreateContactRequestRequired, total=
 
 
 class UpdateOrCreateContactRequestCustomFieldsItem(TypedDict):
-    id: int
+    id: str
     value: str
 
 
 class UpdateOrCreateContactRequestCustomFieldsItem2(TypedDict):
-    id: int
+    id: str
     value: str
 
 
@@ -535,7 +535,7 @@ class UpdateContactRequest(TypedDict, total=False):
     phone: Optional[str]
     notes: Optional[str]
     status: int
-    adviser_id: Optional[int]
+    adviser_id: Optional[str]
     active_conversation: bool
     favorite: bool
     fixed: bool
@@ -545,12 +545,12 @@ class UpdateContactRequest(TypedDict, total=False):
 
 
 class ContactsDeleteBodyTagFiltersItem(TypedDict):
-    tag_ids: List[int]
+    tag_ids: List[str]
     mode: Literal["all", "any", "exclude"]
 
 
 class _ContactsDeleteBodyCustomFieldFiltersItemRequired(TypedDict):
-    custom_field_ids: List[int]
+    custom_field_ids: List[str]
     type: Literal["0", "1", "2", "3", "4"]
 
 
@@ -565,7 +565,7 @@ class ContactsDeleteBodyCustomFieldFiltersItem(_ContactsDeleteBodyCustomFieldFil
 
 
 class ContactTagResource(TypedDict):
-    id: int
+    id: str
     name: str
     description: str
     color: str
@@ -578,8 +578,8 @@ class ContactTagResource(TypedDict):
 
 
 class ContactsAttachCustomFieldBodyItem(TypedDict):
-    customFieldId: int
-    contactId: int
+    customFieldId: str
+    contactId: str
     value: str
 
 
@@ -589,8 +589,8 @@ class ContactsAttachCustomFieldResponseItem(TypedDict):
 
 
 class ContactsDetachCustomFieldBodyItem(TypedDict):
-    customFieldId: int
-    contactId: int
+    customFieldId: str
+    contactId: str
 
 
 class ContactsDetachCustomFieldResponse(TypedDict):
@@ -616,9 +616,9 @@ class ContactsMetaWindowResponseVariant3(TypedDict):
 
 
 class ContactNoteResource(TypedDict):
-    id: int
-    contact_id: int
-    author_id: Optional[int]
+    id: str
+    contact_id: str
+    author_id: Optional[str]
     author_name: Any
     body: str
     created_at: Optional[str]
@@ -663,8 +663,8 @@ class ConversationsMarkAllUnreadResponse(TypedDict):
 
 
 class _SendMessageRequestRequired(TypedDict):
-    device_id: int
-    contact_id: int
+    device_id: str
+    contact_id: str
 
 
 class SendMessageRequest(_SendMessageRequestRequired, total=False):
@@ -715,9 +715,9 @@ class MessagesSendResponse(TypedDict):
 
 
 class PublicMessageResource(TypedDict):
-    id: int
-    contact_id: Optional[int]
-    device_id: Optional[int]
+    id: str
+    contact_id: Optional[str]
+    device_id: Optional[str]
     direction: Literal["outbound", "inbound"]
     type: Literal["text", "image", "video", "document", "sticker", "contact", "audio", "note", "action", "invalid", "interactive", "location", "voice_call", "video_call", "event", "button", "template", "notification", "option_list", "template_button_reply", "poll", "whatsapp_form", "call_permission_request", "call_permission_reply", "request_contact_info"]
     status: Optional[Literal["sent", "delivered", "read", "failed", "queued"]]
@@ -728,12 +728,12 @@ class PublicMessageResource(TypedDict):
 
 
 class _SendDirectMessageRequestRequired(TypedDict):
-    device_id: int
+    device_id: str
 
 
 class SendDirectMessageRequest(_SendDirectMessageRequestRequired, total=False):
     text: str
-    contact_id: Optional[int]
+    contact_id: Optional[str]
     phone: Optional[str]
     whatsapp_id: Optional[str]
     file: str
@@ -751,8 +751,8 @@ class MessagesSendDirectResponse(TypedDict):
 
 
 class _SendWhatsappFormRequestRequired(TypedDict):
-    form_id: int
-    device_id: int
+    form_id: str
+    device_id: str
 
 
 class SendWhatsappFormRequest(_SendWhatsappFormRequestRequired, total=False):
@@ -767,16 +767,16 @@ class MessagesSendFormResponse(TypedDict):
 
 class _MessageResourceRequired(TypedDict):
     chat_id: str
-    contact_id: Union[int, Literal[""]]
+    contact_id: str
     content: Union[List[Any], Dict[str, Any], str]
-    device_id: Union[int, Literal[""]]
+    device_id: str
     error_code: str
     file: str
     forwarded: int
     group_id: Union[int, Literal[""]]
-    id: int
+    id: str
     origin: Union[MessageOriginEnum, Literal[""]]
-    origin_id: Union[int, Literal[""]]
+    origin_id: Optional[str]
     own: int
     reference_message: Optional[str]
     reference_message_uid: Optional[str]
@@ -788,7 +788,7 @@ class _MessageResourceRequired(TypedDict):
     type: Optional[MessageTypeEnum]
     uid: str
     info: Union[List[Any], Literal[""]]
-    user_id: int
+    user_id: str
     deleted_at: Optional[str]
     deleted_scope: Optional[str]
     deleted_by: Optional[int]
@@ -811,8 +811,8 @@ class MessageResourceAiAssistant(TypedDict):
 
 
 class _StoreContactCardRequestRequired(TypedDict):
-    device_id: int
-    contact_card_ids: List[int]
+    device_id: str
+    contact_card_ids: List[str]
 
 
 class StoreContactCardRequest(_StoreContactCardRequestRequired, total=False):
@@ -832,17 +832,17 @@ class ForwardMessageRequest(_ForwardMessageRequestRequired, total=False):
 
 
 class ForwardMessageRequestTargetsItem(TypedDict):
-    contact_id: int
-    device_id: int
+    contact_id: str
+    device_id: str
 
 
 class ForwardMessageRequestTargetsItem2(TypedDict):
-    contact_id: int
-    device_id: int
+    contact_id: str
+    device_id: str
 
 
 class MessagesForwardResponseItem(TypedDict):
-    contact_id: int
+    contact_id: str
     mode: Literal["internal", "native"]
     status: Literal["queued", "blocked"]
     reason: Optional[str]
@@ -854,7 +854,7 @@ class StoreMessageReactionRequest(TypedDict):
 
 
 class TemplateResource(TypedDict):
-    id: int
+    id: str
     name: str
     text: str
     header: str
@@ -870,8 +870,8 @@ class TemplateResource(TypedDict):
     file: str
     params: Union[List[Any], Literal[""]]
     buttons: Union[List[Any], Literal[""]]
-    user_id: int
-    device_id: int
+    user_id: str
+    device_id: str
     created_at: Optional[str]
     recategorized_at: Optional[str]
     quick_reply_buttons: List[Any]
@@ -918,7 +918,7 @@ class StoreMessageTemplateRequestButtonsItem2(TypedDict, total=False):
 
 
 class _UpdateMessageTemplateRequestRequired(TypedDict):
-    device_id: int
+    device_id: str
     category: Literal["UTILITY", "MARKETING", "AUTHENTICATION"]
     type: Literal["text", "image", "document", "video", "location", "default"]
     body: str
@@ -955,8 +955,8 @@ class TemplatesSendResponse(TypedDict):
 
 
 class _WhatsappFormResourceRequired(TypedDict):
-    id: int
-    family_id: int
+    id: str
+    family_id: str
     name: str
     label: str
     category: str
@@ -976,7 +976,7 @@ class WhatsappFormResource(_WhatsappFormResourceRequired, total=False):
     fields: Optional[List[Any]]
     mapping: Optional[List[Any]]
     tag_rules: Optional[List[Any]]
-    draft_id: int
+    draft_id: str
     draft_version: int
     sends: int
     responses: int
@@ -1001,12 +1001,12 @@ class WhatsappFormTemplate(TypedDict):
 
 
 class _StoreWhatsappFormRequestRequired(TypedDict):
-    device_id: int
+    device_id: str
     template_key: str
 
 
 class StoreWhatsappFormRequest(_StoreWhatsappFormRequestRequired, total=False):
-    device_ids: List[int]
+    device_ids: List[str]
 
 
 class FormsCreateResponse(TypedDict):
@@ -1023,16 +1023,16 @@ class FormsRetrieveResponse(TypedDict):
 
 
 class WhatsappForm(TypedDict):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     workspace_id: Optional[int]
     phone_number_id: str
-    family_id: int
+    family_id: str
     name: str
     category: str
     status: str
     version: int
-    parent_flow_id: Optional[int]
+    parent_flow_id: Optional[str]
     definition: List[Any]
     flow_json: Optional[List[Any]]
     flow_json_hash: Optional[str]
@@ -1051,7 +1051,7 @@ class WhatsappForm(TypedDict):
     created_at: Optional[str]
     updated_at: Optional[str]
     deleted_at: Optional[str]
-    actor_user_id: Optional[int]
+    actor_user_id: Optional[str]
 
 
 class _SaveWhatsappFormRequestRequired(TypedDict):
@@ -1162,7 +1162,7 @@ class FormsNumbersResponse(TypedDict):
 
 
 class AddFormNumberRequest(TypedDict):
-    device_id: int
+    device_id: str
 
 
 class FormsAddNumberResponse(TypedDict):
@@ -1182,8 +1182,8 @@ class FormsDefinitionResponse(TypedDict):
 
 
 class FormsDefinitionResponseData(TypedDict):
-    family_id: int
-    form_id: int
+    family_id: str
+    form_id: str
     name: str
     status: str
     version: int
@@ -1205,7 +1205,7 @@ class FormsVersionsResponse(TypedDict):
 
 
 class FormsVersionsResponseDataItem(TypedDict):
-    id: int
+    id: str
     version: int
     name: str
     status: str
@@ -1239,16 +1239,16 @@ class FormsRetrieveResponseResponse(TypedDict):
 
 
 class FormsRetrieveResponseResponseData(TypedDict):
-    id: int
+    id: str
     flow_token: str
     contact: FormsRetrieveResponseResponseDataContact
     status: Union[FormsRetrieveResponseResponseDataStatus, FormsRetrieveResponseResponseDataStatusVariant2, FormsRetrieveResponseResponseDataStatusVariant3, FormsRetrieveResponseResponseDataStatusVariant4]
     origin: str
     node_id: Optional[str]
-    automation_run_id: Optional[int]
+    automation_run_id: Optional[str]
     conversation_id: Optional[int]
     version: int
-    version_id: int
+    version_id: str
     output_id: Optional[str]
     output_label: Optional[str]
     reason: Optional[str]
@@ -1267,7 +1267,7 @@ class FormsRetrieveResponseResponseData(TypedDict):
 
 
 class FormsRetrieveResponseResponseDataContact(TypedDict):
-    id: int
+    id: str
     name: Optional[str]
     phone: Optional[str]
 
@@ -1300,8 +1300,8 @@ class FormsRetrieveResponseResponseDataAnswersItem(TypedDict):
 
 
 class FormsRetrieveResponseResponseDataEffectsItemVariant2(TypedDict):
-    id: int
-    run_id: int
+    id: str
+    run_id: str
     kind: str
     kind_label: str
     status: str
@@ -1347,7 +1347,7 @@ class FormsMetricsResponseDataNotSentReasonsItemVariant2(TypedDict):
 
 
 class TagResource(TypedDict):
-    id: int
+    id: str
     name: str
     description: str
     color: Optional[str]
@@ -1358,7 +1358,7 @@ class TagResource(TypedDict):
 
 
 class _CustomFieldResourceRequired(TypedDict):
-    id: int
+    id: str
     name: str
     type: Literal[0, 1, 2, 3, 4]
     description: Optional[str]
@@ -1370,7 +1370,7 @@ class CustomFieldResource(_CustomFieldResourceRequired, total=False):
 
 
 class GroupResource(TypedDict):
-    id: Any
+    id: Optional[str]
     admins_numbers: Any
     admins: Any
     admins_count: Any
@@ -1381,7 +1381,7 @@ class GroupResource(TypedDict):
     communityUid: Any
     newsletterUid: Any
     description: Any
-    deviceId: Any
+    deviceId: Optional[str]
     image: Any
     isFull: Any
     isApi: Any
@@ -1455,7 +1455,7 @@ class ParticipantEventResource(TypedDict):
     whatsapp_id: str
     event_type: Literal["join", "leave"]
     event_at: Optional[str]
-    group_id: int
+    group_id: str
     group_name: str
     country_code: str
     country_name: str
@@ -1471,8 +1471,8 @@ class ScheduledMessageResource(TypedDict):
     audience: str
     total_readed: str
     total_played: str
-    campaigns: str
-    groups: str
+    campaigns: List[Dict[str, Any]]
+    groups: List[Dict[str, Any]]
     total_groups: str
     messages: List[MessageTemplateResource]
 
@@ -1489,7 +1489,7 @@ class MessageTemplateResource(TypedDict):
 
 
 class ActionGroupResource2(TypedDict):
-    id: str
+    id: Optional[str]
     name: str
     status: str
     info: Any
@@ -1513,7 +1513,7 @@ class ActionGroupResourceVariant2(TypedDict):
 
 
 class _SendGroupMessageRequestRequired(TypedDict):
-    device_id: int
+    device_id: str
     type: Literal["text", "image", "video", "audio", "document"]
 
 
@@ -1530,7 +1530,7 @@ class ApiGroupActionAcceptedResource(TypedDict):
 
 
 class ApiGroupDeviceRequest(TypedDict):
-    device_id: int
+    device_id: str
 
 
 class GroupsFollowResponse(TypedDict):
@@ -1552,7 +1552,7 @@ class ApiGroupActionResource(TypedDict):
     action_id: str
     type: Literal["create_group", "add_participants", "remove_participants", "promote_admins", "demote_admins", "update_name", "update_description", "update_photo", "update_settings", "renew_invite_link", "send_message", "approve_join_requests", "reject_join_requests"]
     status: Literal["queued", "running", "completed", "failed"]
-    device_id: Optional[int]
+    device_id: Optional[str]
     group: Optional[Dict[str, Any]]
     result: Union[ApiGroupActionResourceResult, ApiGroupActionResourceResultVariant2, ApiGroupActionResourceResultVariant3, ApiGroupActionResourceResultVariant4, Dict[str, Any], None]
     reason: Optional[str]
@@ -1596,16 +1596,17 @@ class ApiGroupActionResourceResultVariant4Message(TypedDict):
 
 
 class DeviceResource(TypedDict):
-    id: int
+    id: str
     alias: str
     image: str
     color: str
     number: str
     normalized_number: str
     first_conecction_at: str
-    user_id: int
+    user_id: str
     provider: WhatsAppProviderEnum
     waba_id: str
+    phone_number_id: Optional[str]
     whatsapp_username: Optional[str]
     is_business: int
     connected: int
@@ -1620,7 +1621,7 @@ class DeviceResource(TypedDict):
     pool_keep: bool
     qr_allowed: bool
     can_change_to_meta: bool
-    connected_by_user_id: Optional[int]
+    connected_by_user_id: Optional[str]
     connected_by_name: Optional[str]
     abilities: DeviceResourceAbilities
     capabilities: DeviceResourceCapabilities
@@ -1684,7 +1685,7 @@ class _StoreDeviceRequestRequired(TypedDict):
 class StoreDeviceRequest(_StoreDeviceRequestRequired, total=False):
     alias: Optional[str]
     external_reference: Optional[str]
-    same_number_as: Optional[int]
+    same_number_as: Optional[str]
     country: Optional[str]
 
 
@@ -1705,6 +1706,7 @@ class PendingDeviceQr(TypedDict):
 class DeviceHealthDetailResource(TypedDict):
     health: str
     identity: str
+    meta_status: Optional[str]
     entities: str
     throughput_level: str
     history: List[DeviceHealthDetailResourceHistoryItem]
@@ -1721,7 +1723,7 @@ class DeviceHealthDetailResourceHistoryItem(TypedDict):
 
 
 class DeviceConnectionEventResource(TypedDict):
-    id: int
+    id: str
     phone: Optional[str]
     event: DeviceConnectionEventEnum
     created_at: str
@@ -1734,8 +1736,8 @@ class _StoreConnectLinkRequestRequired(TypedDict):
 class StoreConnectLinkRequest(_StoreConnectLinkRequestRequired, total=False):
     allowed_connection_types: List[Literal["coexistence", "dedicated"]]
     provision_us_number: bool
-    device_id: Optional[int]
-    same_number_as: Optional[int]
+    device_id: Optional[str]
+    same_number_as: Optional[str]
     country: Optional[str]
     external_reference: Optional[str]
     return_url: Optional[str]
@@ -1747,7 +1749,7 @@ class ConnectLinksCreateResponse(TypedDict):
 
 
 class ConnectLinkResource(TypedDict):
-    id: int
+    id: str
     type: str
     status: str
     url: str
@@ -1755,7 +1757,7 @@ class ConnectLinkResource(TypedDict):
     allowed_connection_types: Optional[List[str]]
     provision_us_number: bool
     country: Optional[str]
-    device_id: Optional[int]
+    device_id: Optional[str]
     external_reference: Optional[str]
     return_url: Optional[str]
     error_code: Optional[str]
@@ -1884,11 +1886,11 @@ class WebhooksTestResponse(TypedDict):
     response_status: Optional[int]
     error: Optional[Literal["non_2xx", "internal_error", "timeout", "connection_failed", "tls_error", "destination_not_allowed", "secret_unreadable"]]
     duration_ms: Optional[int]
-    delivery_id: int
+    delivery_id: str
 
 
 class WebhookSubscriptionDeliveryResource(TypedDict):
-    id: int
+    id: str
     event_id: str
     event_type: str
     attempt: int
@@ -1953,7 +1955,7 @@ class BroadcastFinishedEventData(TypedDict):
 
 
 class BroadcastFinishedEventDataBroadcast(TypedDict):
-    id: int
+    id: str
     name: str
 
 
@@ -1981,7 +1983,7 @@ class BroadcastPausedEventData(TypedDict):
 
 
 class BroadcastPausedEventDataBroadcast(TypedDict):
-    id: int
+    id: str
     name: str
 
 
@@ -2034,7 +2036,7 @@ class ContactCreatedEventData(TypedDict):
 
 
 class ContactCreatedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
     email: str
@@ -2058,24 +2060,24 @@ class ContactStageChangedEventData(TypedDict):
 
 
 class ContactStageChangedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
 
 class ContactStageChangedEventDataBoard(TypedDict):
-    id: int
+    id: str
     name: str
 
 
 class ContactStageChangedEventDataFromStage(TypedDict):
-    id: int
+    id: str
     name: str
     position: int
 
 
 class ContactStageChangedEventDataToStage(TypedDict):
-    id: int
+    id: str
     name: str
     position: int
 
@@ -2096,13 +2098,13 @@ class ContactTagAddedEventData(TypedDict):
 
 
 class ContactTagAddedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
 
 class ContactTagAddedEventDataTag(TypedDict):
-    id: int
+    id: str
     name: str
 
 
@@ -2122,13 +2124,13 @@ class ContactTagRemovedEventData(TypedDict):
 
 
 class ContactTagRemovedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
 
 class ContactTagRemovedEventDataTag(TypedDict):
-    id: int
+    id: str
     name: str
 
 
@@ -2148,14 +2150,14 @@ class ContactUpdatedEventData(TypedDict):
 
 
 class ContactUpdatedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
     email: str
 
 
 class ContactUpdatedEventDataCustomFieldsItem(TypedDict):
-    id: int
+    id: str
     name: str
     value: str
 
@@ -2175,7 +2177,7 @@ class ConversationAssignedEventData(TypedDict):
 
 
 class ConversationAssignedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
@@ -2199,7 +2201,7 @@ class ConversationClosedEventData(TypedDict):
 
 
 class ConversationClosedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
@@ -2366,12 +2368,12 @@ class FlowCompletedEventData(TypedDict):
 
 
 class FlowCompletedEventDataFlow(TypedDict):
-    id: int
+    id: str
     name: str
 
 
 class FlowCompletedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
@@ -2392,12 +2394,12 @@ class FlowFailedEventData(TypedDict):
 
 
 class FlowFailedEventDataFlow(TypedDict):
-    id: int
+    id: str
     name: str
 
 
 class FlowFailedEventDataContact(TypedDict):
-    id: int
+    id: str
     name: str
     phone: str
 
@@ -2878,9 +2880,9 @@ class MacUsage80Event(TypedDict):
 
 
 class MessageReactionFailedEventData(TypedDict):
-    message_id: int
-    contact_id: int
-    device_id: int
+    message_id: str
+    contact_id: str
+    device_id: str
     emoji: str
     reason: str
     requested_at: str
@@ -3183,7 +3185,7 @@ class TemplateStatusChangedEventData(TypedDict):
 
 
 class TemplateStatusChangedEventDataTemplate(TypedDict):
-    id: int
+    id: str
     uid: str
     name: str
     category: str

@@ -38,16 +38,16 @@ def reply(status: int, body: Any = None, headers: Dict[str, str] | None = None) 
 
 def test_send_by_phone_in_one_call_and_never_retried() -> None:
     calls: List[httpx.Request] = []
-    message = {"id": 1002, "contact_id": 2001, "device_id": 3, "status": "queued"}
+    message = {"id": "msg_AFHtaOVjNBTEWzCuDrmxMPQ", "contact_id": "ctc_ABsza6Ialu1BCUyPFZ8WJvV", "device_id": "dev_AFHtaOVjNBTEWzCuDrmxMPP", "status": "queued"}
     client = make_client(lambda request: reply(200, {"message": message}), calls)
 
-    result = client.messages.send_direct(device_id=3, phone="5491100000000", text="Hi Ana!")
+    result = client.messages.send_direct(device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP", phone="5491100000000", text="Hi Ana!")
 
-    assert result["message"]["id"] == 1002 and result["message"]["status"] == "queued"
+    assert result["message"]["id"] == "msg_AFHtaOVjNBTEWzCuDrmxMPQ" and result["message"]["status"] == "queued"
     request = calls[0]
     assert request.method == "POST"
     assert str(request.url) == "https://api.funnelchat.com/api/v1/message/send-message"
-    assert json.loads(request.content) == {"device_id": 3, "phone": "5491100000000", "text": "Hi Ana!"}
+    assert json.loads(request.content) == {"device_id": "dev_AFHtaOVjNBTEWzCuDrmxMPP", "phone": "5491100000000", "text": "Hi Ana!"}
     assert request.headers["Authorization"] == "Bearer 1|fc_live_test"
     assert request.headers["User-Agent"].startswith(f"funnelchat-python/{funnelchat.__version__} python/")
     assert client.last_response is not None and client.last_response.request_id == "req-123"
@@ -57,11 +57,11 @@ def test_send_by_phone_in_one_call_and_never_retried() -> None:
         calls.clear()
         client = make_client(lambda request: reply(status, body, {"Retry-After": "0"}), calls)
         with pytest.raises(funnelchat.APIError):
-            client.messages.send_direct(device_id=3, phone="5491100000000", text="Hi Ana!")
+            client.messages.send_direct(device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP", phone="5491100000000", text="Hi Ana!")
         assert len(calls) == 1
     calls.clear()
     with pytest.raises(funnelchat.RateLimitError):
-        client.messages.send_direct(device_id=3, phone="5491100000000", text="Hi", retry_send=True)
+        client.messages.send_direct(device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP", phone="5491100000000", text="Hi", retry_send=True)
     assert len(calls) == 3  # retry_send: the rule of writes, 1 + max_retries on a 429
 
 
@@ -70,26 +70,26 @@ def test_follow_a_group() -> None:
     followed = {"uid": "120363000000000001@g.us", "name": "Customers", "imported": True, "is_admin": True}
     client = make_client(lambda request: reply(201, {"data": followed}), calls)
 
-    result = client.groups.follow("120363000000000001@g.us", device_id=3)
+    result = client.groups.follow("120363000000000001@g.us", device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP")
 
     assert result["data"]["imported"] is True and result["data"]["is_admin"] is True
     assert calls[0].method == "POST"
     assert calls[0].url.raw_path == b"/api/v1/groups/120363000000000001%40g.us/import"
-    assert json.loads(calls[0].content) == {"device_id": 3}
+    assert json.loads(calls[0].content) == {"device_id": "dev_AFHtaOVjNBTEWzCuDrmxMPP"}
 
 
 def test_bring_a_numbers_templates_from_meta() -> None:
     calls: List[httpx.Request] = []
     client = make_client(lambda request: reply(202, {"status": "in_progress"}), calls)
 
-    assert client.templates.sync(3) == {"status": "in_progress"}
-    assert (calls[0].method, calls[0].url.path, calls[0].content) == ("POST", "/api/v1/devices/3/templates", b"")
+    assert client.templates.sync("dev_AFHtaOVjNBTEWzCuDrmxMPP") == {"status": "in_progress"}
+    assert (calls[0].method, calls[0].url.path, calls[0].content) == ("POST", "/api/v1/devices/dev_AFHtaOVjNBTEWzCuDrmxMPP/templates", b"")
 
     calls.clear()
     refused = {"error": "meta_rejected", "message": "Meta rejected it", "meta_code": 190}
     client = make_client(lambda request: reply(422, refused), calls)
     with pytest.raises(funnelchat.UnprocessableEntityError) as raised:
-        client.templates.sync(3)
+        client.templates.sync("dev_AFHtaOVjNBTEWzCuDrmxMPP")
     assert (raised.value.code, raised.value.body["meta_code"], len(calls)) == ("meta_rejected", 190, 1)
     assert funnelchat.TEMPLATE_SYNC_ERROR_CODES["meta_rejected"] == 422
 
@@ -107,7 +107,7 @@ def test_error_mapping() -> None:
     for status, body, cls in cases:
         client = make_client(lambda request: reply(status, body), calls, max_retries=0)
         with pytest.raises(cls) as raised:
-            client.contacts.retrieve(2001)
+            client.contacts.retrieve("ctc_ABsza6Ialu1BCUyPFZ8WJvV")
         error = raised.value
         assert isinstance(error, funnelchat.APIError)
         assert (error.status, error.code, error.request_id, error.body) == (status, body.get("error"), "req-123", body)
@@ -116,18 +116,18 @@ def test_error_mapping() -> None:
     validation = {"message": "The phone field is required.", "errors": {"phone": ["The phone field is required."]}}
     client = make_client(lambda request: reply(422, validation), calls)
     with pytest.raises(funnelchat.UnprocessableEntityError) as raised:
-        client.messages.send_direct(device_id=3, text="Hi")
+        client.messages.send_direct(device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP", text="Hi")
     assert raised.value.code is None and raised.value.errors == validation["errors"]
 
     # A read is retried on a 429 with the wait it asks for; one longer than 60 s is raised right away.
     calls.clear()
-    answers = iter([reply(429, {"error": "rate_limited"}, {"Retry-After": "1"}), reply(200, {"data": {"id": 2001}})])
-    assert make_client(lambda request: next(answers), calls).contacts.retrieve(2001) == {"data": {"id": 2001}}
+    answers = iter([reply(429, {"error": "rate_limited"}, {"Retry-After": "1"}), reply(200, {"data": {"id": "ctc_ABsza6Ialu1BCUyPFZ8WJvV"}})])
+    assert make_client(lambda request: next(answers), calls).contacts.retrieve("ctc_ABsza6Ialu1BCUyPFZ8WJvV") == {"data": {"id": "ctc_ABsza6Ialu1BCUyPFZ8WJvV"}}
     assert len(calls) == 2
     calls.clear()
     client = make_client(lambda request: reply(429, {"error": "daily_cap_exceeded"}, {"Retry-After": "3600"}), calls)
     with pytest.raises(funnelchat.RateLimitError) as raised:
-        client.contacts.retrieve(2001)
+        client.contacts.retrieve("ctc_ABsza6Ialu1BCUyPFZ8WJvV")
     assert raised.value.retry_after == 3600 and len(calls) == 1
 
     calls.clear()
@@ -143,7 +143,7 @@ def test_errors_survive_pickle() -> None:
     for status in (400, 401, 403, 404, 409, 415, 418, 422, 429, 500):
         client = make_client(lambda request: reply(status, {"error": "window_closed", "message": "Closed"}, {"Retry-After": "7"}), calls, max_retries=0)
         with pytest.raises(funnelchat.APIError) as raised:
-            client.contacts.retrieve(2001)
+            client.contacts.retrieve("ctc_ABsza6Ialu1BCUyPFZ8WJvV")
         errors.append(raised.value)
     errors += [
         funnelchat.APIConnectionError(),

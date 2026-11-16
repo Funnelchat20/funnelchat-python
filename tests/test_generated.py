@@ -93,7 +93,7 @@ def test_events_type_what_production_sends() -> None:
     # A type of message the spec does not list yet is a string too, and the event is read as it comes.
     known, other = typing.get_args(typing.get_type_hints(types.MessageReceivedEventDataMessage)["type"])
     assert "text" in typing.get_args(known) and other is str
-    body = json.dumps({"id": "evt_1", "type": "message.received", "version": 1, "occurred_at": "2026-11-13T12:00:00Z", "data": {"message": {"id": 1, "type": "a_new_kind", "text": None, "media": None}}})
+    body = json.dumps({"id": "evt_1", "type": "message.received", "version": 1, "occurred_at": "2026-11-13T12:00:00Z", "data": {"message": {"id": "msg_AFHtaOVjNBTEWzCuDrmxMPQ", "type": "a_new_kind", "text": None, "media": None}}})
     t = int(time.time())
     header = f"t={t},v1={hmac.new(b'whsec_test', f'{t}.{body}'.encode(), hashlib.sha256).hexdigest()}"
     assert construct_event(body, header, "whsec_test")["data"]["message"]["type"] == "a_new_kind"

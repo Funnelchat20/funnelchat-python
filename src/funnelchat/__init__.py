@@ -3,8 +3,8 @@
     from funnelchat import Funnelchat
 
     client = Funnelchat()  # reads FUNNELCHAT_API_KEY
-    result = client.messages.send_direct(device_id=3, phone="5491100000000", text="Hi Ana!")
-    print(result["message"]["id"], result["message"]["status"])  # 1002 queued
+    result = client.messages.send_direct(device_id="dev_AFHtaOVjNBTEWzCuDrmxMPP", phone="5491100000000", text="Hi Ana!")
+    print(result["message"]["id"], result["message"]["status"])  # msg_AFHtaOVjNBTEWzCuDrmxMPQ queued
 
 The types of the responses and of the webhook events are in `funnelchat.types`.
 """

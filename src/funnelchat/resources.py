@@ -1,6 +1,6 @@
 """GENERATED FILE — do not edit. Run `python scripts/generate.py`.
 
-Source: spec/funnelchat.json (sha256 3a5f39f1bd8d62c5…) + spec/pending.json + spec/resources.json.
+Source: spec/funnelchat.json (sha256 fadcd73731cba99d…) + spec/pending.json + spec/resources.json.
 
 The resources of the client: one class per piece of the API, from spec/resources.json.
 """
@@ -139,9 +139,9 @@ class Contacts(Resource):
         created_at: str | NotGiven = NOT_GIVEN,
         created_from: str | NotGiven = NOT_GIVEN,
         created_to: str | NotGiven = NOT_GIVEN,
-        tag_ids: List[int] | NotGiven = NOT_GIVEN,
+        tag_ids: List[str] | NotGiven = NOT_GIVEN,
         tag_mode: Literal["all", "any", "exclude"] | NotGiven = NOT_GIVEN,
-        custom_field_ids: List[int] | NotGiven = NOT_GIVEN,
+        custom_field_ids: List[str] | NotGiven = NOT_GIVEN,
         custom_field_mode: Literal["all", "any", "exclude"] | NotGiven = NOT_GIVEN,
         custom_field_value: str | NotGiven = NOT_GIVEN,
         custom_field_date_from: str | NotGiven = NOT_GIVEN,
@@ -220,7 +220,7 @@ class Contacts(Resource):
         name: Optional[str] | NotGiven = NOT_GIVEN,
         email: Optional[str] | NotGiven = NOT_GIVEN,
         image: Optional[str] | NotGiven = NOT_GIVEN,
-        deviceId: Optional[int] | NotGiven = NOT_GIVEN,
+        deviceId: Optional[str] | NotGiven = NOT_GIVEN,
         custom_fields: List[StoreContactRequestCustomFieldsItem2] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -278,7 +278,7 @@ class Contacts(Resource):
 
     def retrieve(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -302,7 +302,7 @@ class Contacts(Resource):
 
     def update(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         name: Optional[str] | NotGiven = NOT_GIVEN,
@@ -310,7 +310,7 @@ class Contacts(Resource):
         phone: Optional[str] | NotGiven = NOT_GIVEN,
         notes: Optional[str] | NotGiven = NOT_GIVEN,
         status: int | NotGiven = NOT_GIVEN,
-        adviser_id: Optional[int] | NotGiven = NOT_GIVEN,
+        adviser_id: Optional[str] | NotGiven = NOT_GIVEN,
         active_conversation: bool | NotGiven = NOT_GIVEN,
         favorite: bool | NotGiven = NOT_GIVEN,
         fixed: bool | NotGiven = NOT_GIVEN,
@@ -354,14 +354,14 @@ class Contacts(Resource):
         self,
         *,
         all: bool | NotGiven = NOT_GIVEN,
-        contactIds: List[int] | NotGiven = NOT_GIVEN,
+        contactIds: List[str] | NotGiven = NOT_GIVEN,
         created_from: Optional[str] | NotGiven = NOT_GIVEN,
         created_to: Optional[str] | NotGiven = NOT_GIVEN,
         tag_mode: Optional[Literal["all", "any", "exclude"]] | NotGiven = NOT_GIVEN,
-        tag_ids: Optional[List[int]] | NotGiven = NOT_GIVEN,
+        tag_ids: Optional[List[str]] | NotGiven = NOT_GIVEN,
         tag_filters: Optional[List[ContactsDeleteBodyTagFiltersItem]] | NotGiven = NOT_GIVEN,
         custom_field_mode: Optional[Literal["all", "any", "exclude"]] | NotGiven = NOT_GIVEN,
-        custom_field_ids: Optional[List[int]] | NotGiven = NOT_GIVEN,
+        custom_field_ids: Optional[List[str]] | NotGiven = NOT_GIVEN,
         custom_field_value: Optional[str] | NotGiven = NOT_GIVEN,
         custom_field_date_from: Optional[str] | NotGiven = NOT_GIVEN,
         custom_field_date_to: Optional[str] | NotGiven = NOT_GIVEN,
@@ -408,7 +408,7 @@ class Contacts(Resource):
 
     def list_tags(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         perPage: int | NotGiven = NOT_GIVEN,
@@ -433,7 +433,7 @@ class Contacts(Resource):
 
     def list_custom_fields(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         name: str | NotGiven = NOT_GIVEN,
@@ -501,10 +501,10 @@ class Contacts(Resource):
 
     def meta_window(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -528,7 +528,7 @@ class Contacts(Resource):
 
     def list_by_device(
         self,
-        device: int,
+        device: str,
         /,
         *,
         perPage: int | NotGiven = NOT_GIVEN,
@@ -553,7 +553,7 @@ class Contacts(Resource):
 
     def list_notes(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         search: Optional[str] | NotGiven = NOT_GIVEN,
@@ -579,7 +579,7 @@ class Contacts(Resource):
 
     def create_note(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
         body: str,
@@ -605,8 +605,8 @@ class Contacts(Resource):
 
     def delete_note(
         self,
-        contact: int,
-        note: int,
+        contact: str,
+        note: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -638,18 +638,18 @@ class Conversations(Resource):
         self,
         *,
         perName: str | NotGiven = NOT_GIVEN,
-        contactId: int | NotGiven = NOT_GIVEN,
+        contactId: str | NotGiven = NOT_GIVEN,
         cursor: str | NotGiven = NOT_GIVEN,
         updated_since: str | NotGiven = NOT_GIVEN,
         favorites: bool | NotGiven = NOT_GIVEN,
         ownContacts: bool | NotGiven = NOT_GIVEN,
         ownAndUnassigned: bool | NotGiven = NOT_GIVEN,
-        deviceId: int | NotGiven = NOT_GIVEN,
-        advisorId: int | NotGiven = NOT_GIVEN,
+        deviceId: str | NotGiven = NOT_GIVEN,
+        advisorId: str | NotGiven = NOT_GIVEN,
         advisorIds: str | NotGiven = NOT_GIVEN,
         activeConversation: bool | NotGiven = NOT_GIVEN,
         tags: str | NotGiven = NOT_GIVEN,
-        kanbanSettingId: int | NotGiven = NOT_GIVEN,
+        kanbanSettingId: str | NotGiven = NOT_GIVEN,
         kanbanStageIds: str | NotGiven = NOT_GIVEN,
         unreadMessages: bool | NotGiven = NOT_GIVEN,
         awaitingReply: bool | NotGiven = NOT_GIVEN,
@@ -908,14 +908,14 @@ class Messages(Resource):
 
     def send(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         phone: str | NotGiven = NOT_GIVEN,
         whatsapp_id: str | NotGiven = NOT_GIVEN,
         text: str | NotGiven = NOT_GIVEN,
-        contact_id: int | NotGiven = NOT_GIVEN,
+        contact_id: str | NotGiven = NOT_GIVEN,
         file: str | NotGiven = NOT_GIVEN,
         file_type: Optional[Literal["image", "video", "audio", "document", "sticker"]] | NotGiven = NOT_GIVEN,
         file_name: Optional[str] | NotGiven = NOT_GIVEN,
@@ -978,9 +978,9 @@ class Messages(Resource):
     def send_direct(
         self,
         *,
-        device_id: int,
+        device_id: str,
         text: str | NotGiven = NOT_GIVEN,
-        contact_id: Optional[int] | NotGiven = NOT_GIVEN,
+        contact_id: Optional[str] | NotGiven = NOT_GIVEN,
         phone: Optional[str] | NotGiven = NOT_GIVEN,
         whatsapp_id: Optional[str] | NotGiven = NOT_GIVEN,
         file: str | NotGiven = NOT_GIVEN,
@@ -1037,11 +1037,11 @@ class Messages(Resource):
 
     def send_form(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
-        form_id: int,
-        device_id: int,
+        form_id: str,
+        device_id: str,
         text: str | NotGiven = NOT_GIVEN,
         button_text: str | NotGiven = NOT_GIVEN,
         client_reference: Optional[str] | NotGiven = NOT_GIVEN,
@@ -1077,8 +1077,8 @@ class Messages(Resource):
 
     def get(
         self,
-        contact: int,
-        message: int,
+        contact: str,
+        message: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1104,7 +1104,7 @@ class Messages(Resource):
 
     def list(
         self,
-        contact_id: int,
+        contact_id: str,
         /,
         *,
         cursor: str | NotGiven = NOT_GIVEN,
@@ -1131,11 +1131,11 @@ class Messages(Resource):
 
     def send_contact_card(
         self,
-        contact: int,
+        contact: str,
         /,
         *,
-        device_id: int,
-        contact_card_ids: List[int],
+        device_id: str,
+        contact_card_ids: List[str],
         client_reference: Optional[str] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1166,8 +1166,8 @@ class Messages(Resource):
 
     def forward(
         self,
-        contact: int,
-        message: int,
+        contact: str,
+        message: str,
         /,
         *,
         targets: List[ForwardMessageRequestTargetsItem2],
@@ -1198,8 +1198,8 @@ class Messages(Resource):
 
     def react(
         self,
-        contact: int,
-        message: int,
+        contact: str,
+        message: str,
         /,
         *,
         emoji: str,
@@ -1225,8 +1225,8 @@ class Messages(Resource):
 
     def remove_reaction(
         self,
-        contact: int,
-        message: int,
+        contact: str,
+        message: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1260,11 +1260,12 @@ class Templates(Resource):
         language_code: Optional[str] | NotGiven = NOT_GIVEN,
         status: Optional[Literal["PENDING", "APPROVED", "REJECTED", "PENDING_DELETION", "PAUSED", "DISABLED", "ARCHIVED"]] | NotGiven = NOT_GIVEN,
         category: Optional[str] | NotGiven = NOT_GIVEN,
-        deviceId: Optional[int] | NotGiven = NOT_GIVEN,
+        deviceId: Optional[str] | NotGiven = NOT_GIVEN,
         type: Optional[Literal["text", "image", "document", "video", "location", "default"]] | NotGiven = NOT_GIVEN,
         created_by_webhook: bool | NotGiven = NOT_GIVEN,
         quality: Optional[Literal["GREEN", "YELLOW", "RED", "UNKNOWN", "NOT_APPLICABLE"]] | NotGiven = NOT_GIVEN,
         include: Optional[Literal["quality_counts"]] | NotGiven = NOT_GIVEN,
+        scope: Optional[Literal["waba"]] | NotGiven = NOT_GIVEN,
         perPage: int | NotGiven = NOT_GIVEN,
         orderBy: Literal["name", "created_at", "updated_at"] | NotGiven = NOT_GIVEN,
         orderByMethod: Literal["asc", "desc"] | NotGiven = NOT_GIVEN,
@@ -1291,6 +1292,7 @@ class Templates(Resource):
                 "created_by_webhook": created_by_webhook,
                 "quality": quality,
                 "include": include,
+                "scope": scope,
                 "perPage": perPage,
                 "orderBy": orderBy,
                 "orderByMethod": orderByMethod,
@@ -1303,7 +1305,7 @@ class Templates(Resource):
 
     def sync(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1381,7 +1383,7 @@ class Templates(Resource):
 
     def retrieve(
         self,
-        template: int,
+        template: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1405,10 +1407,10 @@ class Templates(Resource):
 
     def update(
         self,
-        template: int,
+        template: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         category: Literal["UTILITY", "MARKETING", "AUTHENTICATION"],
         type: Literal["text", "image", "document", "video", "location", "default"],
         body: str,
@@ -1449,11 +1451,11 @@ class Templates(Resource):
 
     def send(
         self,
-        device: int,
+        device: str,
         template: str,
         /,
         *,
-        contact_id: Optional[int] | NotGiven = NOT_GIVEN,
+        contact_id: Optional[str] | NotGiven = NOT_GIVEN,
         phone: Optional[str] | NotGiven = NOT_GIVEN,
         whatsapp_id: Optional[str] | NotGiven = NOT_GIVEN,
         template_variables: TemplatesSendBodyTemplateVariables | NotGiven = NOT_GIVEN,
@@ -1495,8 +1497,8 @@ class Templates(Resource):
 
     def delete(
         self,
-        device: int,
-        template: int,
+        device: str,
+        template: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1538,7 +1540,7 @@ class Forms(Resource):
         *,
         q: Optional[str] | NotGiven = NOT_GIVEN,
         status: Optional[Literal["draft", "published", "deprecated"]] | NotGiven = NOT_GIVEN,
-        device_id: Optional[int] | NotGiven = NOT_GIVEN,
+        device_id: Optional[str] | NotGiven = NOT_GIVEN,
         page: Optional[int] | NotGiven = NOT_GIVEN,
         perPage: int | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1589,9 +1591,9 @@ class Forms(Resource):
     def create(
         self,
         *,
-        device_id: int,
+        device_id: str,
         template_key: str,
-        device_ids: List[int] | NotGiven = NOT_GIVEN,
+        device_ids: List[str] | NotGiven = NOT_GIVEN,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -1613,7 +1615,7 @@ class Forms(Resource):
 
     def retrieve(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1638,7 +1640,7 @@ class Forms(Resource):
 
     def update(
         self,
-        id: int,
+        id: str,
         /,
         *,
         definition: SaveWhatsappFormRequestDefinition2,
@@ -1671,7 +1673,7 @@ class Forms(Resource):
 
     def delete(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1695,7 +1697,7 @@ class Forms(Resource):
 
     def create_version(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1718,7 +1720,7 @@ class Forms(Resource):
 
     def sync(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1741,7 +1743,7 @@ class Forms(Resource):
 
     def publish(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1763,7 +1765,7 @@ class Forms(Resource):
 
     def numbers(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1787,10 +1789,10 @@ class Forms(Resource):
 
     def add_number(
         self,
-        id: int,
+        id: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -1813,8 +1815,8 @@ class Forms(Resource):
 
     def remove_number(
         self,
-        id: int,
-        device_id: int,
+        id: str,
+        device_id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1838,7 +1840,7 @@ class Forms(Resource):
 
     def retry_numbers(
         self,
-        id: int,
+        id: str,
         /,
         *,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -1860,7 +1862,7 @@ class Forms(Resource):
 
     def definition(
         self,
-        family_id: int,
+        family_id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1885,7 +1887,7 @@ class Forms(Resource):
 
     def versions(
         self,
-        family_id: int,
+        family_id: str,
         /,
         *,
         perPage: int | NotGiven = NOT_GIVEN,
@@ -1911,12 +1913,12 @@ class Forms(Resource):
 
     def list_responses(
         self,
-        family_id: int,
+        family_id: str,
         /,
         *,
         from_: Optional[str] | NotGiven = NOT_GIVEN,
         to: Optional[str] | NotGiven = NOT_GIVEN,
-        version_id: Optional[int] | NotGiven = NOT_GIVEN,
+        version_id: Optional[str] | NotGiven = NOT_GIVEN,
         origin: Optional[str] | NotGiven = NOT_GIVEN,
         status: Optional[str] | NotGiven = NOT_GIVEN,
         kind: Optional[str] | NotGiven = NOT_GIVEN,
@@ -1957,8 +1959,8 @@ class Forms(Resource):
 
     def retrieve_response(
         self,
-        family_id: int,
-        run_id: int,
+        family_id: str,
+        run_id: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -1982,12 +1984,12 @@ class Forms(Resource):
 
     def metrics(
         self,
-        family_id: int,
+        family_id: str,
         /,
         *,
         from_: Optional[str] | NotGiven = NOT_GIVEN,
         to: Optional[str] | NotGiven = NOT_GIVEN,
-        version_id: Optional[int] | NotGiven = NOT_GIVEN,
+        version_id: Optional[str] | NotGiven = NOT_GIVEN,
         origin: Optional[str] | NotGiven = NOT_GIVEN,
         status: Optional[str] | NotGiven = NOT_GIVEN,
         kind: Optional[str] | NotGiven = NOT_GIVEN,
@@ -2090,7 +2092,7 @@ class Tags(Resource):
 
     def retrieve(
         self,
-        tag: int,
+        tag: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2114,7 +2116,7 @@ class Tags(Resource):
 
     def update(
         self,
-        tag: int,
+        tag: str,
         /,
         *,
         name: str,
@@ -2165,7 +2167,7 @@ class Tags(Resource):
 
     def list_contacts(
         self,
-        tag: int,
+        tag: str,
         /,
         *,
         perPage: int | NotGiven = NOT_GIVEN,
@@ -2265,7 +2267,7 @@ class CustomFields(Resource):
 
     def retrieve(
         self,
-        custom_field: int,
+        custom_field: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2289,7 +2291,7 @@ class CustomFields(Resource):
 
     def update(
         self,
-        custom_field: int,
+        custom_field: str,
         /,
         *,
         name: str | NotGiven = NOT_GIVEN,
@@ -2359,7 +2361,7 @@ class Groups(Resource):
         type: Literal["1", "2", "3", "4"] | NotGiven = NOT_GIVEN,
         perPage: int | NotGiven = NOT_GIVEN,
         status: Literal["0", "1", "2", "3", "4", "5", "6", "7", "8"] | NotGiven = NOT_GIVEN,
-        deviceId: int | NotGiven = NOT_GIVEN,
+        deviceId: str | NotGiven = NOT_GIVEN,
         noCampaign: bool | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
@@ -2415,7 +2417,7 @@ class Groups(Resource):
 
     def list_by_device(
         self,
-        device: int,
+        device: str,
         /,
         *,
         page: int | NotGiven = NOT_GIVEN,
@@ -2448,7 +2450,7 @@ class Groups(Resource):
         uid: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         group_uid: str,
         type: Literal["groups", "ad-groups", "channels"] | NotGiven = NOT_GIVEN,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2626,7 +2628,7 @@ class Groups(Resource):
         group_uid: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         type: Literal["text", "image", "video", "audio", "document"],
         text: str | NotGiven = NOT_GIVEN,
         media_url: str | NotGiven = NOT_GIVEN,
@@ -2673,7 +2675,7 @@ class Groups(Resource):
         group_uid: str,
         /,
         *,
-        device_id: int,
+        device_id: str,
         extra_body: Optional[Dict[str, Any]] = None,
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -2762,7 +2764,7 @@ class Devices(Resource):
         connection: Literal["qr"],
         alias: Optional[str] | NotGiven = NOT_GIVEN,
         external_reference: Optional[str] | NotGiven = NOT_GIVEN,
-        same_number_as: Optional[int] | NotGiven = NOT_GIVEN,
+        same_number_as: Optional[str] | NotGiven = NOT_GIVEN,
         country: Optional[str] | NotGiven = NOT_GIVEN,
         idempotency_key: Optional[str] = None,
         extra_body: Optional[Dict[str, Any]] = None,
@@ -2799,7 +2801,7 @@ class Devices(Resource):
 
     def retrieve(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2823,7 +2825,7 @@ class Devices(Resource):
 
     def delete(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2851,7 +2853,7 @@ class Devices(Resource):
 
     def update(
         self,
-        device: int,
+        device: str,
         /,
         *,
         alias: Optional[str] | NotGiven = NOT_GIVEN,
@@ -2870,12 +2872,12 @@ class Devices(Resource):
         extra_headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         max_retries: Optional[int] = None,
-    ) -> DeviceResource:
+    ) -> Union[DeviceResource, str]:
         """`PUT /api/v1/devices/{device}`: also changes `external_reference`.
 
         Permission: **WhatsApp numbers → Edit**.
         """
-        return cast("DeviceResource", self._request(
+        return cast("Union[DeviceResource, str]", self._request(
             "PUT",
             "/api/v1/devices/{device}",
             path_params={"device": device},
@@ -2901,7 +2903,7 @@ class Devices(Resource):
 
     def qr(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2928,7 +2930,7 @@ class Devices(Resource):
 
     def status(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2952,7 +2954,7 @@ class Devices(Resource):
 
     def health(
         self,
-        device: int,
+        device: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -2976,7 +2978,7 @@ class Devices(Resource):
 
     def list_connection_history(
         self,
-        device: int,
+        device: str,
         /,
         *,
         orderBy: str | NotGiven = NOT_GIVEN,
@@ -3020,8 +3022,8 @@ class ConnectLinks(Resource):
         type: Literal["meta", "qr"],
         allowed_connection_types: List[Literal["coexistence", "dedicated"]] | NotGiven = NOT_GIVEN,
         provision_us_number: bool | NotGiven = NOT_GIVEN,
-        device_id: Optional[int] | NotGiven = NOT_GIVEN,
-        same_number_as: Optional[int] | NotGiven = NOT_GIVEN,
+        device_id: Optional[str] | NotGiven = NOT_GIVEN,
+        same_number_as: Optional[str] | NotGiven = NOT_GIVEN,
         country: Optional[str] | NotGiven = NOT_GIVEN,
         external_reference: Optional[str] | NotGiven = NOT_GIVEN,
         return_url: Optional[str] | NotGiven = NOT_GIVEN,
@@ -3062,7 +3064,7 @@ class ConnectLinks(Resource):
 
     def get(
         self,
-        link: int,
+        link: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
@@ -3111,7 +3113,7 @@ class ConnectLinks(Resource):
 
     def revoke(
         self,
-        link: int,
+        link: str,
         /,
         *,
         extra_query: Optional[Dict[str, Any]] = None,
